@@ -1,0 +1,5 @@
+# CLI uploads and builds need only the app; source photos and QA screenshots stay in git.
+/assets
+/docs
+/.next
+/node_modules
