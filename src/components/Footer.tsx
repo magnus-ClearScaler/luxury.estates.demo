@@ -6,7 +6,7 @@ import { Wordmark } from "./Wordmark";
 
 /**
  * Brief 5.3. Linen. Grid 1.4fr 1fr 1fr on desktop, stacked on mobile:
- * wordmark and line | ESTATES with the nine names | HOUSE links. Then a
+ * wordmark and line | ESTATES with the published names (eleven) | HOUSE links. Then a
  * hairline and the legal line with the colophon linked. No social glyphs,
  * newsletter, phone, email or address.
  */

@@ -31,18 +31,12 @@
   text-align: center;
 }
 
-.group {
-  margin-top: var(--section);
-}
-.groupRule {
-  margin-top: 20px;
-}
-
 .rows {
   display: flex;
   flex-direction: column;
   row-gap: clamp(72px, 7vw, 104px);
-  margin-top: clamp(48px, 4.4vw, 64px);
+  /* Round 2: no group headings, so the first row sits a section below the link. */
+  margin-top: var(--section);
 }
 
 .closing {

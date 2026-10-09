@@ -2,16 +2,17 @@ import Link from "next/link";
 import { Frame } from "./Frame";
 import { TextLink } from "./TextLink";
 import { copy } from "@/lib/copy";
-import { indexPhotoOf, priceDisplay, specLine, srcOf, type Estate } from "@/lib/estates";
+import { indexPhotoOf, placeLine, priceDisplay, specLine, srcOf, type Estate } from "@/lib/estates";
 import styles from "./EstateRow.module.css";
 
 /**
- * One zigzag row of the Estates index (brief 6.2.5). The house's hero (or its
- * round 3 `indexFrame`, where the hero shows no building), wide
- * (894 x 552 at 1440), and a 469px text column, top aligned: town, name, the
+ * One zigzag row of the Estates index (brief 6.2.5). The house's hero (or an
+ * `indexFrame`, where one is set; none is in round 2, as every hero is a
+ * house), wide (894 x 552 at 1440), and a 469px text column, top aligned:
+ * `TOWN, REGION` (owner round 2), name, the
  * `short` sentence, the spec and price lines, and `VIEW THE HOUSE` pinned to
  * the bottom of the row above a hairline. `flip` puts the image on the right;
- * the alternation runs across the whole page, not per group. Stacked on
+ * the alternation runs down the whole page. Stacked on
  * mobile, image first, at the same wide 1.62 ratio (round 2: a 4:5 crop of
  * a landscape agency photograph lost the house; 4:5 is kept for the detail
  * page heroes, whose focal points are chosen for it).
@@ -36,7 +37,7 @@ export function EstateRow({ estate, flip = false, eager = false }: { estate: Est
         />
       </Link>
       <div className={styles.text}>
-        <p className={`t-eyebrow c-taupe ${styles.eyebrow}`}>{estate.town}</p>
+        <p className={`t-eyebrow c-taupe ${styles.eyebrow}`}>{placeLine(estate)}</p>
         <h3 className="t-h3">{estate.name}</h3>
         <p className={`t-body ${styles.sentence}`}>{estate.short}</p>
         <p className={`t-small c-umber ${styles.spec}`}>

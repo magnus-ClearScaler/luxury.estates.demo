@@ -14,7 +14,7 @@ import styles from "./EnquiryForm.module.css";
 export type EnquiryHouse = { slug: string; name: string };
 
 export type EnquiryFormProps = {
-  /** The nine published houses in index order (`published()` mapped to slug and name). */
+  /** The published houses (eleven) in index order (`published()` mapped to slug and name). */
   houses: readonly EnquiryHouse[];
   /** Preselected house slug (from `?house=slug`, or the estate page). */
   house?: string;

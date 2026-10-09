@@ -28,7 +28,8 @@ const heroes = estates
     return [`estates/${e.slug}/${h.file}.jpg`, `listings/${e.sourceSlug}/${h.file}.jpg`];
   });
 const refs = [
-  ["atmosphere/sailboat-beige-sea.jpg", "atmosphere/sailboat-beige-sea.jpg"],
+  // Owner round 2: the sailboat is off the site; Mas Blanc 01 is the reference.
+  ["estates/mas-blanc-mougins/01.jpg", "listings/mas-blanc-mougins/01.jpg"],
   ["atmosphere/terrace-sea-pale-morning.jpg", "atmosphere/terrace-sea-pale-morning.jpg"],
 ];
 
@@ -36,20 +37,26 @@ const interiors = estates
   .filter((e) => e.published)
   .flatMap((e) => e.gallery.filter((p) => p.grade === "interior").map((p) => `estates/${e.slug}/${p.file}.jpg`));
 
+// Owner round 2: every published frame with a pool in it.
 const pools = [
-  "estates/le-belvedere-nice/01.jpg",
-  "estates/le-belvedere-nice/02.jpg",
-  "estates/le-belvedere-nice/05.jpg",
-  "estates/le-belvedere-nice/07.jpg",
-  "estates/villa-blanche-cap-dantibes/05.jpg",
-  "estates/maison-edouard-beaulieu/02.jpg",
-  "estates/maison-edouard-beaulieu/11.jpg",
-  "estates/maison-edouard-beaulieu/12.jpg",
   "estates/mas-blanc-mougins/01.jpg",
   "estates/mas-blanc-mougins/02.jpg",
-  "estates/les-pins-eze/03.jpg",
+  "estates/bastide-des-oliviers-vence/02.jpg",
+  "estates/bastide-des-oliviers-vence/07.jpg",
+  "estates/les-arcades-ramatuelle/06.jpg",
+  "estates/les-arcades-ramatuelle/03.jpg",
+  "estates/villa-blanche-cap-dantibes/02.jpg",
+  "estates/villa-blanche-cap-dantibes/03.jpg",
+  "estates/villa-camille-roquebrune/03.jpg",
+  "estates/maison-du-chemin-saint-tropez/06.jpg",
+  "estates/maison-du-chemin-saint-tropez/05.jpg",
+  "estates/bastide-du-ciel-gassin/06.jpg",
+  "estates/le-mas-rose-ramatuelle/01.jpg",
+  "estates/le-mas-rose-ramatuelle/05.jpg",
   "estates/domaine-des-vignes-saint-tropez/01.jpg",
-  "estates/maison-des-collines-ramatuelle/01.jpg",
+  "estates/domaine-des-vignes-saint-tropez/04.jpg",
+  "estates/maison-edouard-beaulieu/02.jpg",
+  "estates/maison-edouard-beaulieu/11.jpg",
 ];
 
 async function tile(path, H) {
@@ -104,7 +111,7 @@ await sheet(
   [originals.slice(0, 6), graded.slice(0, 6), originals.slice(6), graded.slice(6)],
   join(ROOT, "docs/qa/grade-before-after.jpg"),
 );
-// One column, as the heroes stack on /estates, with the sailboat as the sky reference.
+// One column, as the heroes stack on /estates, with Mas Blanc 01 as the sky reference.
 await sheet(
   [...chunk(heroes.map(([g]) => pub(g)), 3), [pub(refs[0][0]), pub(refs[1][0])]],
   join(ROOT, "docs/qa/r2/sheet-heroes.jpg"),

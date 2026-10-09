@@ -5,6 +5,272 @@ Final, merged brief from both bosses (decision log: `docs/research/conductor-dec
 Repo: `/Users/magnusmb/luxury.estates.demo`. Dev port 3430. Vercel project `aubemar-demo` on the `magnus-clearscaler` account.
 
 
+## Owner feedback, round 2 (villas first)
+
+Magnus, 2026-10-09, after the second look: "The best houses are not on the first page. The best pictures are the beautiful pictures of the villas. The first two houses on the home page are not the best villas. Les Pins does not have many beautiful pictures of the house. Maison Edouard has an insane view but not enough photos of the house. Link the front page to the best pictures of the houses, and add some more houses from online."
+
+This section is the merge of `docs/direction-r2-opus.md` and `docs/direction-r2-fable.md` by the conductor. It is binding and overrides sections 6.1, 6.2, 7, 7.1, 7.2 and the round 1 section below wherever they conflict. Where the two bosses disagreed, the choice that puts the most beautiful villas first won; the reasons are given inline. Every contested crop was rendered at its real slot ratio before deciding (scratchpad `r2merge/home.jpg`, `heroes.jpg`). Everything the owner already likes stays exactly as it is: the paper, the palette, Newsreader and Jost, the inset prints, square corners, the round 1 spacing, the hero film, the copy voice. No em or en dashes in `src/` or `data/`, and none in this section.
+
+### R2.0 The rule
+
+Every still on Home is a photograph of a house, whole, seen from outside, in its setting: the facade in its garden, among pines, olives or cypress, the pool in front of the house, a terrace with the house behind. A view without the house is secondary everywhere and never on Home. Every published house opens on the house itself, and views, rooms and details come after it. A house without a strong frame of the house is not on Home; it sits at the foot of the index or is held.
+
+Why the old Home failed the rule: Les Pins 01 (pines, no house), Villa Blanche 10 (a front door), Maison Édouard 02 (pool and sea, no house), Le Belvédère 01 (a deck). The first two houses in the index, Villa Cap Fleuri and Les Pins, ranked 10th and 13th of 14 for house photography (`docs/research/photo-scores.md`).
+
+### R2.1 The published set: eleven houses, in order of beauty
+
+/estates is one sequence, ordered by how beautiful the house is in its best frame. **The two region groups (`Bord de mer`, `Collines`) and their h2 headings are removed from /estates** (`groups()` is no longer used there; render `published()` in order). The region moves into each row's eyebrow, which becomes `placeLine(e)` set in caps (`MOUGINS, COLLINES`, `RAMATUELLE, BORD DE MER`), the same string the estate page intro already uses. The zigzag rows, their sizes, the text column and the alternation (`flip` by index across the whole page, `eager` on the first row) are unchanged. References renumber in this order.
+
+| # | Ref | Slug | Name | Town | Region | Status | Why here |
+|---|---|---|---|---|---|---|---|
+| 1 | AM-0101 | `mas-blanc-mougins` | Mas Blanc | Mougins | collines | kept | 01 is the best house photograph we own: the pool reflecting the house, steps through lavender and cypress. |
+| 2 | AM-0102 | `bastide-des-oliviers-vence` | Bastide des Oliviers | Vence | collines | NEW | The 1751 bastide across its lawn under ivy, old olives either side; the most romantic frame in either batch. |
+| 3 | AM-0103 | `les-arcades-ramatuelle` | Les Arcades | Ramatuelle | mer | NEW | The axial path between cypresses to the ivy facade; the softest colour of the new batch. |
+| 4 | AM-0104 | `villa-blanche-cap-dantibes` | Villa Blanche | Cap d'Antibes | mer | kept | The archetypal Belle Époque villa among umbrella pines, pool in front, once it opens on 02. |
+| 5 | AM-0105 | `villa-camille-roquebrune` | Villa Camille | Roquebrune-Cap-Martin | mer | NEW | A real 1891 villa framed by olive and bougainvillea above the sea; the grandest house in the set. |
+| 6 | AM-0106 | `maison-du-chemin-saint-tropez` | Maison du Chemin | Saint-Tropez | collines | NEW | Seven true exteriors, calm facades behind old trees. New build, so below the old houses. |
+| 7 | AM-0107 | `bastide-du-ciel-gassin` | Bastide du Ciel | Gassin | collines | was held, PUBLISH | 02, the ochre bastide between a cypress and a pine with the gulf behind, is one of the five best frames across all 22 folders. Above Le Mas Rose because its best frame is stronger (both bosses said so; Opus ranked it lower for its HDR, which the grade absorbs). |
+| 8 | AM-0108 | `le-mas-rose-ramatuelle` | Le Mas Rose | Ramatuelle | collines | NEW | The rose house with sage shutters behind a green tiled pool; the quietest, most domestic house of the new batch. |
+| 9 | AM-0109 | `bastide-des-pres-chateauneuf` | Bastide des Prés | Châteauneuf-Grasse | collines | kept | Lovely compositions (11, 01, 02) and a hero that shows the house; AI smoothed texture at 100%, so card and hero size only, never Home. |
+| 10 | AM-0110 | `domaine-des-vignes-saint-tropez` | Domaine des Vignes | Saint-Tropez | collines | kept | The calmest colour of all, but the house sits small and far back in every frame. |
+| 11 | AM-0111 | `maison-edouard-beaulieu` | Maison Édouard | Beaulieu-sur-Mer | mer | kept, demoted | One real house frame (01), now the hero. Last, for the view the owner called insane. Never on Home. First to cut if the owner wants ten. |
+
+Home shows houses 1 to 7, in that order, one still each (R2.4).
+
+**Held** (`published: false`, `reference: null`; the `own` entries, galleries and tunes stay in `estates.ts` so nothing is lost; `grade.mjs` already skips unpublished houses, so their graded folders go: delete `public/estates/{les-pins-eze,le-belvedere-nice,villa-cap-fleuri,maison-des-collines-ramatuelle}`):
+
+- `les-pins-eze` (score 2): no exterior of the house exists.
+- `le-belvedere-nice` (3): a penthouse; no villa in any frame. Remove its `indexFrame`; no published house needs one now, because every hero is a house.
+- `villa-cap-fleuri` (5): tired frontal facade, crazy paving, a neighbour in frame, heavy HDR.
+- `maison-des-collines-ramatuelle` (6): contemporary, lawn heavy; the peninsula already has five stronger houses.
+- New, not published, added to `own` as held with empty galleries: `la-pinede-ramatuelle` (first reserve: a lovely stone house under wisteria, but the heaviest HDR of the new batch and a 1990s kidney pool with a waterfall), `maison-du-cap-roquebrune` (contemporary, built up neighbours, artificial lawn), `la-pergola-beaulieu` (no frame shows the whole house; the Maison Édouard problem without the view).
+- Still held: `domaine-des-cypres-cap-ferrat`, `bastide-de-la-rade-villefranche` (second reserve: a stone bastide with a tower over the rade, but the most HDR heavy set we have; Fable proposed publishing it twelfth, Opus held it; held, because the owner asked for calm house photography and Rade needs the firmest grade on the site to sit beside Mas Blanc), `villa-lerins-cannes`, `lattique-saint-tropez`.
+
+If the owner wants twelve: Bastide de la Rade first, La Pinède second, each with the firm grade from Fable's direction file section 3. If he wants ten: drop Maison Édouard.
+
+Prices: Bastide des Oliviers (€3,300,000) and Bastide des Prés (€3,800,000) sit under the €4M floor from the research and stay for their photography. Villa Camille (€29,500,000) is at or above €20M, so it reads `Price on request` on the index and `On request` in Particulars; Les Arcades (€19,500,000) shows its figure.
+
+### R2.2 Data for the new houses
+
+- `src/data/estates.ts` imports `data/listings-new-east.json` and `data/listings-new-west.json` into `sources` alongside the two existing files (same `with { type: "json" }` attribute). Bastide du Ciel is already in `listings-west.json`.
+- `type`, `short`, `long`, `features`, `source_url`, `source_agency`, `ref`, beds, baths, areas, year and price come unchanged from the JSON. Never invent a bathroom count (Maison du Cap has none; it is held anyway) or a year (Le Mas Rose and Bastide du Ciel have none; the `Built` row is omitted).
+- Fields we own:
+
+| Slug | region | outlook | builtApprox |
+|---|---|---|---|
+| `bastide-des-oliviers-vence` | collines | `Garden and hills` | false (1751) |
+| `les-arcades-ramatuelle` | mer | `Sea and pines` | false (2002) |
+| `villa-camille-roquebrune` | mer | `Sea and Monaco` (the listing's own claim: unobstructed view over the sea and Monaco) | false (1891) |
+| `maison-du-chemin-saint-tropez` | collines | `Garden` | false (2024) |
+| `bastide-du-ciel-gassin` | collines | `Hills and sea` | false (no year) |
+| `le-mas-rose-ramatuelle` | collines | `Garden and pines` | false (no year) |
+
+- The seven `own` entries (six published, plus the three new held) go in index order; `own` then holds 22 houses.
+- `src/lib/estates.ts`: `groups()` is no longer used by /estates; keep `regionLabel` and `placeLine` for the eyebrows. `countWord` already covers eleven.
+- The colophon estates table is generated from data, so the six new rows, their source links, the two Sotheby's domains and the Zingraf co-listing note on Les Arcades appear on their own; check they render in `Listed by`.
+
+### R2.3 Copy changes (existing voice, no dashes)
+
+| Where | Was | Now |
+|---|---|---|
+| `copy.estates.intro` | `{N} houses between Cap-d'Ail and Ramatuelle.` | `{N} houses between Roquebrune and the Saint-Tropez peninsula.` |
+| `copy.house.blocks[0].body` | `{N} at present, between Cap-d'Ail and Ramatuelle. We would rather know each one well than list many.` | `{N} at present, between Roquebrune and the Saint-Tropez peninsula. We would rather know each one well than list many.` |
+| `keepPlaceNames` in `estates/page.tsx` | holds `Cap-d'Ail` on one line | holds `Saint-Tropez` on one line |
+| Section 0 of this brief | `Nine houses between Cap-d'Ail and Ramatuelle` | `Eleven houses between Roquebrune and the Saint-Tropez peninsula` |
+
+Why "Roquebrune" and not "Cap Martin": Villa Camille's listing places it between Monaco and Cap Martin, so the cape is not the eastern end; the commune is. Why "the Saint-Tropez peninsula": Gassin, Ramatuelle and Saint-Tropez are all on it, so the phrase stays true whichever of them is furthest west. `{N}` stays data driven (`Eleven`).
+
+The footer `ESTATES` column and the enquiry form's house select read `published()`, so they pick up the eleven in order on their own (the footer column grows from 9 to 11 lines, which is fine).
+
+### R2.4 Home: seven stills, seven houses, every one an exterior
+
+The structure does not change: film, intro line, feature pair, statement with its 21:9, estates row, linen band. Only the photographs and the feature copy change. The sailboat comes off Home: both bosses agreed every feature must be a house; Fable would have kept the sailboat in the statement slot as the brand image, Opus replaced it with Bastide des Oliviers 01. Rendered at 21:9, Oliviers 01 is the best crop of that photograph (the whole ivy facade, the old olives and the hills, with the surplus lawn gone), so it takes the slot. Home then shows the seven best houses in index order, which is the owner's sentence made literal.
+
+| Slot | Ratio at 1440 | House and file | Focal | What is in frame |
+|---|---|---|---|---|
+| Feature pair, wide | 1.6065 (570px tall) | **Mas Blanc 01** | 50/55 | The white mas above its reflecting pool, steps through lavender and cypress. The pool reflection must stay in frame: never crop from the bottom. |
+| Feature pair, portrait | 0.76 | **Villa Camille 02** | 50/50 | The full 1891 facade with balustraded steps, the olive branch above, bougainvillea at the right edge, sea at right. Native 1750x1864; the crop takes 1417px of width centred and keeps all of the height. |
+| Statement image | 21:9 (mobile `wide`) | **Bastide des Oliviers 01** | 50/35 | The whole bastide under ivy, old olives either side, the lawn and the hills. Rendered and checked at 21:9 and at 1.62. |
+| Estates row, card 1 | 0.76 | **Les Arcades 02** | 50/50 | Straight up the axis: the path, the hedges, the cypresses and the arched ivy door, centred. |
+| Estates row, card 2 | 0.76 | **Villa Blanche 03** | 58/42 | The lantern tower and the balconies; 58 keeps the thatched pool bar out on the left; the pool corner bottom left takes the cyan pass. |
+| Estates row, card 3 | 0.76 | **Bastide du Ciel 02** | 72/50 | The ochre bastide and the cypress, the gulf of Saint-Tropez behind; the house is in the right half, so the crop sits right. Chosen over Le Mas Rose 01, where the house sits small behind loungers. |
+| Linen band | 1.62 | **Maison du Chemin 02** | 50/50 | The facade in its garden behind the old tree, arched steel windows, agapanthus; dappled light that suits "In person, before ten". |
+
+Three colours across the row (white and ivy, cream Belle Époque, ochre bastide) from three parts of the coast; two Ramatuelle houses are never side by side.
+
+`copy.home` (replaces the four slot objects; `housePhoto()` in `src/app/page.tsx` resolves every one, and throws if a file is not in a published gallery):
+
+```
+featureWide
+  estate   mas-blanc-mougins, file 01, focal [50, 55]
+  eyebrow  MOUGINS
+  title    Mas Blanc
+  body     A white house of stone, lime and old wood above a long green pool.
+  link     VIEW THE HOUSE → /estates/mas-blanc-mougins
+
+featurePortrait   (a house card now, not The House card)
+  estate   villa-camille-roquebrune, file 02, focal [50, 50]
+  eyebrow  ROQUEBRUNE-CAP-MARTIN
+  title    Villa Camille
+  body     A Belle Époque villa of 1891, pale stone and balustrades above an open sea.
+  link     VIEW THE HOUSE → /estates/villa-camille-roquebrune
+
+statement   text unchanged
+statementImage   (new slot, rendered with housePhoto(), ratio "pano", mobileRatio "wide")
+  estate   bastide-des-oliviers-vence, file 01, focal [50, 35]
+
+estatesRow
+  eyebrow  ESTATES
+  cards
+    les-arcades-ramatuelle      02  [50, 50]  Les Arcades      RAMATUELLE
+    villa-blanche-cap-dantibes  03  [58, 42]  Villa Blanche    CAP D'ANTIBES
+    bastide-du-ciel-gassin      02  [72, 50]  Bastide du Ciel  GASSIN
+  link     ALL THE HOUSES → /estates
+
+band
+  estate   maison-du-chemin-saint-tropez, file 02, focal [50, 50]
+  eyebrow  VIEWINGS
+  title    In person, before ten.
+  body     Viewings are private and held in the morning, when the light is level and the roads are empty.
+  link     ARRANGE A VIEWING → /enquire
+```
+
+The portrait feature was `THE HOUSE / Held quietly / ABOUT THE HOUSE` over a front door. It becomes a house, because a villa photograph captioned "about the house" is what made the old Home feel unlinked from the houses. The House is still reached from the menu and the footer. Both feature bodies are the source `short` sentences, trimmed, so they stay true to the listings. The swap is a few words shorter than today's 116, so Home stays under 120; re-run `scripts/check-copy.mjs`.
+
+`src/app/page.tsx`: the statement `Frame` reads `housePhoto(h.statementImage)` instead of `atmosphere.homeStatement`. `src/app/opengraph-image.tsx`: the inset photograph becomes the graded Mas Blanc 01 (`public/estates/mas-blanc-mougins/01.jpg`), same layout, so a shared link shows a house. `sailboat-beige-sea` is then no longer deployed: remove `homeStatement` from `src/data/atmosphere.ts` and from `AtmosphereSlot`, so the grade list and the colophon atmosphere table (which lists only files in `public/atmosphere`) drop it on their own. The file stays in `assets/originals` for the phase 2 journal.
+
+### R2.5 Galleries
+
+Format as in 7.1: hero first, then the sequence; each entry carries its own `frame`; portraits only in consecutive pairs (rendered as a diptych); `detail` is 4:5; `focal` is `[x%, y%]`; `extract` is `[left, top, width, height]` as fractions of the source, cut before the resize. Presets are the grade script's final set (`soft`, `standard`, `garden`, `strong`, `warm`, `interior`). `SKY` (the graduated sky pass) on every hero and on every deep blue exterior noted below; the cyan pass runs on every listing preset, which is how the pools in Oliviers 02, Arcades 06, Camille 03 and Blanche 02 and 03 must come out grey green (if a pool stays bright, add `tune: { saturation: 0.42 }` to that frame, not the preset). No two aerials in a row, no two details in a row, no kitchen or bathroom first or second, no television, no car, no person. Values marked "check" are estimates from the contact sheets: confirm them on `scripts/contact-sheet.mjs` and adjust by eye; do not change the frame choice.
+
+One focal serves desktop and mobile (`Frame` has no mobile focal), so hero focals below were chosen to hold at 1.62 and at 4:5.
+
+#### R2.5.1 New houses
+
+**Bastide des Oliviers** (default `garden`; sources 1800px wide, served at 1800)
+1. hero `01`, garden, focal 65/50, SKY. Alt "The bastide across its lawn, among old olives". At 1.62 the crop loses 9% of width, split 65/35 so the olives at left give way first; at 4:5 the 65 keeps the whole facade (rendered and checked at 66/50).
+2. `02` wide, garden, focal 50/60, SKY (deep sky; the long pool must read grey green). Alt "The long pool, the pool house and the bastide"
+3. `03` portrait, garden, focal 40/50. Alt "Vine pergola along the house"
+4. `05` portrait, garden, focal 45/50, `extract: [0.1, 0, 0.8, 0.86]` (loses the sill and its debris at the bottom). Alt "The garden through an open shutter"
+5. `08` detail, interior, focal 55/45, `tune: { pink: 0.6 }` (the pink flowers). The 4:5 crop at 55 keeps the two arched windows and leaves the lamp at left and the red objects at right outside; check. Alt "Arched windows in the vaulted salon"
+6. `07` wide, garden, focal 50/50. Alt "The bastide and its pool from above"
+Dropped: 04 (teal cushions, turquoise table, umbrellas), 06 (black pedestal chairs under a chandelier).
+
+**Les Arcades** (default `standard`; the hero is slightly soft at 100%, so it takes `sharpen: 0.6`)
+1. hero `02`, standard, focal 50/45, SKY, `tune: { sharpen: 0.6 }`. Alt "The path between cypresses to the ivy covered door". (Opus had 01 here with an extract; at 1.62 that extract cuts both wings, and 02 is the stronger frame. The Home card and the hero are the same photograph, as for Mas Blanc.)
+2. `01` wide, standard, `extract: [0, 0.14, 1, 0.74]` (removes the empty upper sky and, below 88%, the car court and the solar panels; rendered and checked), focal 50/40, SKY. Alt "The white house among olives and pines, the sea beyond"
+3. `07` portrait, standard, focal 45/50. Alt "Arched loggias above the yuccas"
+4. `08` portrait, strong, focal 40/50. Alt "Pergola table facing the sea"
+5. `06` detail, strong, focal 25/50 (the pine's crown sits left of centre; check that the whole crown is in). Alt "A single umbrella pine over the pool and the sea"
+6. `03` wide, garden, focal 50/55. Alt "The house among the umbrella pines"
+Dropped: 04 (a contrail, and it repeats 08), 05 (palm trunks cut the frame), 09 (printed eyes on the bedroom wall).
+
+**Villa Camille** (default `strong`; the deep Riviera blue is this house's weakness, so SKY runs at full strength on every exterior)
+1. hero `02`, strong, focal 50/52, SKY. Rendered at 1.62: chimneys to the foot of the stair, olive and bougainvillea at the edges, the sea at right; native portrait, so 4:5 is almost the whole frame. Alt "The villa among olives and bougainvillea, the sea at right"
+2. `01` wide, strong, `extract: [0.1, 0.08, 0.9, 0.92]` (shrinks the palm frond at top left; rendered, a sliver remains; widen the top cut to 0.1 if it shows), focal 50/60, SKY. Alt "The forecourt facade and its curved stair"
+3. `07` portrait, strong, focal 35/60, `tune: { pink: 0.6 }` (the red jug). Alt "Balustraded terrace over the open sea"
+4. `03` portrait, strong, focal 62/40, SKY (keeps the diving board out on the left; the cyan pool takes the pass). Alt "The villa above its pool terrace"
+5. `08` detail, strong, `extract: [0, 0.12, 0.5, 0.88]` (the bay, the cape with its small white villa and a yacht; the towers of Monaco fall outside), focal 50/50, SKY. Alt "The bay below the house"
+6. `06` wide, strong, focal 50/60, SKY. Alt "The villa above Monaco and the coast" (the listing's own claim is the view over Monaco; this frame is that claim, and the owner likes a view after the house)
+Dropped: 04 (the built up slope and neighbours), 05 (green wicker and the skyline), 09 and 10 (dated interiors with chandeliers and heavy drapes). No interior in this sequence; nothing in the brief requires one.
+
+**Maison du Chemin** (default `garden`; the greens are lifted in every exterior)
+1. hero `06`, garden, `extract: [0, 0.08, 0.74, 0.92]` (loses the loungers at right and the wire across the top; rendered and checked), focal 40/40, SKY. Alt "The second house across its lawn and pool, under old oaks". (Fable's hero; Opus had 02, which is a facade behind a tree, not the whole house. 02 is the Home band instead, so the house is seen twice.)
+2. `02` wide, garden, focal 50/50. Alt "The facade behind an old tree, arched windows and agapanthus"
+3. `04` portrait, garden, focal 30/50. Alt "Balcony and loggia under the vine"
+4. `07` portrait, garden, focal 35/50. Alt "Table under the wisteria, the pool beyond"
+5. `08` detail, interior, focal 45/50 (the stone stair and its iron rail only; the kitchen at left and the orange chair at right stay out; check). Alt "Stone stair and iron rail"
+6. `05` wide, garden, `extract: [0.15, 0, 0.85, 1]` (drops the loungers at the left), focal 50/50. Alt "The long pool before the main house"
+Dropped: 01 and 03 (wide angle, umbrellas and loungers fill the left third), 09 (bedroom with a thermostat and switches in frame), 10 (top down drone).
+
+**Bastide du Ciel** (default `warm` for the ochre render, with the flat HDR treatment on every frame: `CIEL: Tune = { saturation: 0.42, linear: [0.88, 18], hue: 4, sharpen: 0 }`, adjusted on the sheet; the Bastide des Prés garden treatment is the model)
+1. hero `02`, warm, focal 55/55, `{ ...CIEL, ...SKY }`. Alt "The ochre bastide between a cypress and a pine, the gulf beyond"
+2. `03` wide, warm, focal 50/50. Alt "Vine pergola along the house"
+3. `04` portrait, warm, focal 70/50. Alt "Shuttered courtyard"
+4. `05` portrait, warm, focal 65/50. Alt "The glass veranda"
+5. `01` wide, warm, focal 50/50, SKY. Alt "The house under a great umbrella pine"
+6. `06` wide, warm, focal 50/50. Alt "The pool below the cypress"
+7. `09` wide, strong, focal 50/50, SKY. Alt "The hills to the Gulf of Saint-Tropez" (a view, last, after six frames of the house)
+Dropped: 07 and 08 (dated interiors; 08 has a television), 10 (loungers on gravel).
+
+**Le Mas Rose** (default `standard`; already natural, so grade lightly; 04 `garden` for its lush greens)
+1. hero `01`, standard, focal 50/50, SKY. Alt "The rose house above its green pool, among pines and cypress"
+2. `04` wide, garden, focal 50/55, SKY. Alt "The house in the pines, the sea beyond"
+3. `03` portrait, standard, focal 45/50. Alt "Under the reed pergola"
+4. `07` portrait, interior, focal 20/50 (the French windows and the open door; the bed and its red crab cushions stay out; check). Alt "French windows open to the vines"
+5. `05` detail, standard, focal 40/40. Alt "Two cypresses over the pool"
+6. `06` wide, standard, focal 50/50. Alt "The long table under the pergola"
+Dropped: 02 (repeats the hero, wide angle), 08 (loud blue rug, orange vases), 09 (feather wall hangings).
+
+#### R2.5.2 Existing houses: new heroes where a better exterior exists
+
+**Villa Blanche**: the hero moves from 05 (frontal colonnade) to **02** (the whole villa in the pines, pool in front).
+1. hero `02`, strong, `extract: [0.16, 0.06, 0.84, 0.8]` (cuts the thatched pool bar off the left edge; rendered and checked, the extract is already close to 1.62), focal 50/50, `tune: { sky: 0.75 }` (as today's hero, so the cream facade is not lifted with the sky). Alt "The villa among the stone pines, its pool in front"
+2. `01` wide, strong, focal 50/40. Alt "The villa among the pines from above"
+3. `03` portrait, strong, focal 58/42. Alt "The lantern tower and balconies"
+4. `10` portrait, strong, focal 50/45. Alt "Entrance stair under plane trees"
+5. `05` wide, strong, today's `extract: [0.05, 0, 0.95, 0.9]` and `tune: { sky: 0.75 }`, focal 50/0. Alt "Cream Belle Époque facade"
+6. `07` detail, strong, today's tune, focal 40/50. Alt "Stone wall beneath a single pine"
+7. `04` wide, strong, focal 50/50. Alt "The sea through stone pines"
+
+**Maison Édouard**: the hero moves from 02 (pool and sea) to **01** (the villa).
+1. hero `01`, strong, `extract: [0.08, 0.14, 0.66, 0.62]`, focal 50/50, `tune: { ...NEUTRAL_SKY, ...SKY }`. Rendered: the villa with the larger cream house up the hill cut to a sliver at the top right corner and the neighbours' roofs at the far left; that is the honest frame of a town villa. The served file is about 1267px wide, so the hero upscales a little at 1440; widen the extract only if the cream house stays a sliver. Alt "The villa on the hillside above its pool"
+2. `02` wide, strong, focal 62/50, `tune: NEUTRAL_SKY`. Alt "Olive tree beside an infinity pool and the sea" (the owner's view, now second)
+3. `07` portrait, interior, as today
+4. `12` portrait, strong, as today
+5. `04` detail, interior, as today
+6. `11` wide, strong, as today
+
+**Mas Blanc**: hero `01` stays. The drone comes forward so the house is seen twice before the rooms, and the page no longer ends on a detail.
+1. hero `01`, standard, focal 50/55, SKY (as today)
+2. `02` wide, strong, today's `extract: [0, 0.22, 1, 0.78]`, focal 50/50. Alt "The pool from above"
+3. `07` portrait, standard, as today
+4. `05` portrait, interior, as today
+5. `04` detail, interior, as today
+6. `03` wide, interior, `extract: [0, 0, 0.7, 1]` (the dining room without the kitchen in its right third), focal 50/50, tune as Mas Blanc's other interiors (`blue: [0.02, 0.06, 0.925]`). Alt "Dining room open to the garden"
+
+**Domaine des Vignes**: hero `01` stays. `04` (the drone of the main house, pool house and plunge pool under the pines) comes back as the second frame: it shows more house than any other frame of this set.
+1. hero `01`, garden, as today
+2. `04` wide, garden, focal 50/50, SKY. Alt "The house and pool house among the pines"
+3. `05` wide, interior, as today
+4. `06` portrait, interior, as today
+5. `07` portrait, interior, as today
+6. `03` wide, garden, as today
+
+**Bastide des Prés**: unchanged (hero `11`). Its hero is served at up to about 1400px from a 1920 source, downscaled, within the "card size, not full bleed" caveat. Never on Home.
+
+### R2.6 Grade summary for the new and changed frames
+
+| House | Exterior default | Interiors | Sky pass | Per image |
+|---|---|---|---|---|
+| Bastide des Oliviers | `garden` | `interior` | hero, 02 | 05 extract; 08 pink .6 |
+| Les Arcades | `standard` | none | hero, 01 | hero sharpen .6; 01 extract; 08, 06 `strong`; 03 `garden` |
+| Villa Camille | `strong` | none | every exterior (hero, 01, 03, 06, 08) | 01, 08 extracts; 07 pink .6 |
+| Maison du Chemin | `garden` | `interior` | hero | hero, 05 extracts |
+| Bastide du Ciel | `warm` + CIEL on every frame | none | hero, 01, 09 | 09 `strong` |
+| Le Mas Rose | `standard` | `interior` | hero, 04 | 04 `garden` |
+| Villa Blanche (new hero 02, new 03) | `strong` | | hero sky .75 | hero extract |
+| Maison Édouard (new hero 01) | `strong` | | NEUTRAL_SKY + SKY | hero extract |
+| Mas Blanc 03 | | `interior` | | extract |
+| Domaine des Vignes 04 | `garden` | | yes | |
+
+Acceptance before any page is rebuilt (section 8, extended): one contact sheet of the eleven graded heroes in index order, and a second of the seven Home stills in page order, both with Mas Blanc 01 as the reference. Both must read as one shoot at one hour: every sky on the one warm grey, every pool green grey (not cyan), and the Oliviers, Ciel and Chemin lawns no greener than Domaine des Vignes. The known risks are the Villa Camille skies, the Oliviers pool (02) and the Bastide du Ciel HDR. If one frame stands out, tune that frame, not the preset.
+
+### R2.7 Checks before calling it done
+
+1. Home at 1440 and 390: seven stills, seven houses, every one a house exterior; no atmosphere photograph anywhere on Home; the OG image shows Mas Blanc.
+2. /estates: eleven rows in the order of R2.1, no group headings, every row eyebrow `TOWN, REGION`, every row image a house.
+3. Every estate page opens on the house; portraits only in pairs; no two aerials or two details in a row; 5 to 9 frames each, every one with focal and alt.
+4. Particulars show the new AM numbers; Villa Camille reads `On request`; no `Built` row for Le Mas Rose or Bastide du Ciel.
+5. `grep -rP '[\x{2013}\x{2014}]' src data docs/BRIEF.md` returns nothing; `scripts/check-copy.mjs` passes; Home is still under 120 words.
+6. `npm run build` passes (`housePhoto()` throws on any Home slot missing from a published gallery); `/estates/<slug>` returns 200 for all eleven and 404 for the held slugs; the enquiry select lists eleven names plus `A house not shown here`; the colophon has a row for every folder in `public/estates` and every file in `public/atmosphere`; `public/` stays under 60 MB.
+7. LCP is still the film poster; zero CLS.
+8. Screenshots of Home, /estates and all eleven estate pages at 1440 and 390 go into `docs/qa/r4/`, with the hero sheet and the Home sheet from R2.6 beside them.
+9. Nothing is pushed or deployed until the owner approves.
+
+---
+
+
 ## Owner feedback, round 1 (Magnus, 2026-10-09). Overrides the sections below where they conflict.
 
 Magnus viewed the first draft: "the feel is very luxurious, I like it". Keep the overall feel. Three changes:
@@ -19,7 +285,7 @@ Also: the hero poster and film look soft. Re-encode from the highest-resolution 
 
 ## 0. The site in one paragraph
 
-A sheet of warm paper with photographs laid on it, at seven in the morning on the Côte d'Azur. One book serif for reading, one geometric sans for wayfinding and the wordmark, no accent colour, nothing moves on scroll, no hover zoom, square corners everywhere, every photograph inset on the paper like a print. Nine houses between Cap-d'Ail and Ramatuelle, each introduced by a place, a name, one sentence and a quiet line of particulars. Six routes. The home page carries 116 words of main content. The name is Aube'Mar.
+A sheet of warm paper with photographs laid on it, at seven in the morning on the Côte d'Azur. One book serif for reading, one geometric sans for wayfinding and the wordmark, no accent colour, nothing moves on scroll, no hover zoom, square corners everywhere, every photograph inset on the paper like a print. Eleven houses between Roquebrune and the Saint-Tropez peninsula, each introduced by a place, a name, one sentence and a quiet line of particulars. Six routes. The home page carries 116 words of main content. The name is Aube'Mar.
 
 ---
 
@@ -182,7 +448,7 @@ All copy below is final and lives in `src/lib/copy.ts` and `src/data/*.ts`, neve
 ### 6.2 Estates `/estates`
 
 1. display `Estates`, left aligned. No hero image.
-2. Two columns, gap 48px. Left, h2 at weight 300: `Nine houses between Cap-d'Ail and Ramatuelle.` (the number word comes from the data count). Right, lead: `Each is held on a private basis and shown by appointment. Prices are given where the seller allows; the others are available on request.`
+2. Two columns, gap 48px. Left, h2 at weight 300: `Eleven houses between Roquebrune and the Saint-Tropez peninsula.` (the number word comes from the data count). Right, lead: `Each is held on a private basis and shown by appointment. Prices are given where the seller allows; the others are available on request.`
 3. Centred link `MAKE AN ENQUIRY` → `/enquire`.
 4. Two groups, each with an h2 and a hairline beneath. No filter, no sort, no map, no count.
    - `Bord de mer`: Villa Cap Fleuri, Les Pins, Maison Édouard, Le Belvédère, Villa Blanche.

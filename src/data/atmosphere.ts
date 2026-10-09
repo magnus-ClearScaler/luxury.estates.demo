@@ -5,8 +5,9 @@
  * data/atmosphere.json.
  *
  * Round 1 (owner): Home shows the houses, so the feature portrait and the
- * linen band are estate photographs (src/lib/copy.ts); the sailboat is the
- * one atmosphere frame left on Home.
+ * linen band are estate photographs (src/lib/copy.ts). Owner round 2 (brief
+ * R2.4): the statement image is a house too, so no atmosphere photograph is
+ * on Home; the sailboat stays in assets/originals for the phase 2 journal.
  *
  * Imported by scripts/grade.mjs through Node's type stripping: keep it
  * self-contained (no `@/` imports, JSON with an explicit attribute).
@@ -16,7 +17,6 @@ import videos from "../../data/video.json" with { type: "json" };
 import type { Extract, Grade, Tune } from "./estates";
 
 export type AtmosphereSlot =
-  | "homeStatement"
   | "houseWide"
   | "housePortrait"
   | "houseDetail"
@@ -81,9 +81,6 @@ function a(
 }
 
 export const atmosphere: Record<AtmosphereSlot, Atmosphere> = {
-  // Round 2: graded from the full 5184px Unsplash original at q88; the
-  // earlier 2560px copy showed block steps in the 21:9 sky at 1440.
-  homeStatement: a("sailboat-beige-sea", [50, 55], "A distant sail on a pale sea", { quality: 88 }),
   // Standard, with the highlights held down and a neutral red row, so the
   // overcast sky lands near chalk rather than white (or peach) on the paper.
   // Round 2: saturation .5 and a lower green row take the canopy to olive.
@@ -113,7 +110,7 @@ export const atmosphere: Record<AtmosphereSlot, Atmosphere> = {
   // Focal 50/65: the grey water and the boat carry the crop, not the sky.
   // Round 3: the `standard` grade left the upper sky grey-green beside the
   // paper. The `warm` preset (its lower green row and lift) at saturation .3
-  // lands it on grey beige, as the sailboat.
+  // lands it on grey beige.
   enquire: a("boat-still-water-dawn", [50, 65], "A rowing boat on still water at dawn", {
     grade: "warm",
     tune: { saturation: 0.3, hue: 0, brightness: 1.04 },

@@ -1,13 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { atmosphere } from "@/data/atmosphere";
 import { NAME_DISPLAY } from "@/lib/site";
 
 /**
  * Brief 11.2: 1200 x 630 paper ground, the wordmark at 56px in ink in the top
- * band, sailboat-beige-sea inset below with 40px paper margins, nothing written
- * on the photograph. Ported from ~/structured-talent-demo/app/opengraph-image.tsx.
+ * band, a house inset below with 40px paper margins, nothing written on the
+ * photograph. Owner round 2 (brief R2.4): the graded Mas Blanc 01, so a
+ * shared link shows a house. Ported from ~/structured-talent-demo/app/opengraph-image.tsx.
  *
  * Satori reads ttf/otf/woff but not woff2; Google serves ttf when the request
  * carries no browser User-Agent. If the fetch fails the card still renders in
@@ -36,7 +36,7 @@ async function jost300() {
 }
 
 export default async function Image() {
-  const photo = atmosphere.homeStatement;
+  const photo = { src: "/estates/mas-blanc-mougins/01.jpg", focal: [50, 55] as const };
   const [font, jpeg] = await Promise.all([
     jost300(),
     readFile(join(process.cwd(), "public", photo.src)),

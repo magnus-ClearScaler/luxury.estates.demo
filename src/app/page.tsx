@@ -4,7 +4,6 @@ import { FeaturePair } from "@/components/FeaturePair";
 import { Frame } from "@/components/Frame";
 import { HeroFilm } from "@/components/HeroFilm";
 import { TextLink } from "@/components/TextLink";
-import { atmosphere } from "@/data/atmosphere";
 import { copy } from "@/lib/copy";
 import { bySlug, photoSrc } from "@/lib/estates";
 import s from "./page.module.css";
@@ -18,11 +17,11 @@ function housePhoto(slot: { estate: string; file: string; focal: readonly [numbe
 }
 
 /**
- * Home (brief 6.1, owner round 1): the film, one line under it, the feature
- * pair, the statement and its 21:9, three houses, the linen band. The houses
- * carry the page: the feature pair and the band are estate photographs, the
- * sailboat is the one atmosphere frame. Nothing written on a photograph,
- * nothing moves on scroll. Main content stays under 120 words.
+ * Home (brief 6.1, owner rounds 1 and 2): the film, one line under it, the
+ * feature pair, the statement and its 21:9, three houses, the linen band.
+ * Round 2 (brief R2.4): seven stills, seven houses, every one a house seen
+ * from outside in its setting; no atmosphere photograph. Nothing written on
+ * a photograph, nothing moves on scroll. Main content stays under 120 words.
  */
 export default function Home() {
   const h = copy.home;
@@ -56,9 +55,7 @@ export default function Home() {
       <section className="container-x section">
         <p className={`t-statement ${s.statement}`}>{h.statement}</p>
         <Frame
-          src={atmosphere.homeStatement.src}
-          alt={atmosphere.homeStatement.alt}
-          focal={atmosphere.homeStatement.focal}
+          {...housePhoto(h.statementImage)}
           ratio="pano"
           mobileRatio="wide"
           sizes="100vw"

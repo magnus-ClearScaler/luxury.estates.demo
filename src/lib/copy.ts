@@ -72,48 +72,52 @@ const raw = {
       link: { label: "THE ESTATES", href: "/estates" },
     },
     /**
-     * Owner round 1: Home shows the houses. The feature pair and the linen
-     * band are estate photographs (slug and file; alt from the gallery entry).
-     * Round 3: both bosses dropped round 2's "no hero on Home" rule for the
-     * owner's "calmest, widest house frames": Les Pins 01 as brief 6.1.3
-     * (pines over the sea, contrails and pole retouched out), the Villa
-     * Blanche entrance stair, Mas Blanc 01 and Édouard 02 back in the row,
-     * and the Le Belvédère deck in the band. Six houses, none twice.
+     * Owner round 2 (brief R2.4): every still on Home is a house, whole, seen
+     * from outside, in its setting; the seven best houses in index order.
+     * Slug and file; alt from the gallery entry. The portrait feature is a
+     * house card now, not The House card. Both feature bodies are the
+     * listings' own `short` sentences, trimmed.
      */
     featureWide: {
-      estate: "les-pins-eze",
+      estate: "mas-blanc-mougins",
       file: "01",
-      focal: [50, 40] as const,
-      eyebrow: "ÈZE BORD DE MER",
-      title: "Les Pins",
-      body: "A new house of stone and pale oak among old umbrella pines, above the sea.",
-      link: { label: "VIEW THE HOUSE", href: "/estates/les-pins-eze" },
+      focal: [50, 55] as const,
+      eyebrow: "MOUGINS",
+      title: "Mas Blanc",
+      body: "A white house of stone, lime and old wood above a long green pool.",
+      link: { label: "VIEW THE HOUSE", href: "/estates/mas-blanc-mougins" },
     },
     featurePortrait: {
-      estate: "villa-blanche-cap-dantibes",
-      file: "10",
-      focal: [50, 45] as const,
-      eyebrow: "THE HOUSE",
-      title: "Held quietly",
-      body: "A small number of houses each year, each shown at the hour it is at its best.",
-      link: { label: "ABOUT THE HOUSE", href: "/house" },
+      estate: "villa-camille-roquebrune",
+      file: "02",
+      focal: [50, 50] as const,
+      eyebrow: "ROQUEBRUNE-CAP-MARTIN",
+      title: "Villa Camille",
+      body: "A Belle Époque villa of 1891, pale stone and balustrades above an open sea.",
+      link: { label: "VIEW THE HOUSE", href: "/estates/villa-camille-roquebrune" },
     },
     /** One italic word allowed; none is set. */
     statement:
       "The coast is loudest in August and quietest at seven in the morning. We prefer it then.",
+    /** Round 2: the 21:9 under the statement is a house, not the sailboat. */
+    statementImage: {
+      estate: "bastide-des-oliviers-vence",
+      file: "01",
+      focal: [50, 35] as const,
+    },
     estatesRow: {
       eyebrow: "ESTATES",
       cards: [
-        { slug: "mas-blanc-mougins", file: "01", focal: [50, 55] as const, name: "Mas Blanc", town: "MOUGINS" },
-        { slug: "maison-edouard-beaulieu", file: "02", focal: [62, 50] as const, name: "Maison Édouard", town: "BEAULIEU-SUR-MER" },
-        { slug: "bastide-des-pres-chateauneuf", file: "02", focal: [50, 45] as const, name: "Bastide des Prés", town: "CHÂTEAUNEUF-GRASSE" },
+        { slug: "les-arcades-ramatuelle", file: "02", focal: [50, 50] as const, name: "Les Arcades", town: "RAMATUELLE" },
+        { slug: "villa-blanche-cap-dantibes", file: "03", focal: [58, 42] as const, name: "Villa Blanche", town: "CAP D'ANTIBES" },
+        { slug: "bastide-du-ciel-gassin", file: "02", focal: [72, 50] as const, name: "Bastide du Ciel", town: "GASSIN" },
       ],
       link: { label: "ALL THE HOUSES", href: "/estates" },
     },
     band: {
-      estate: "le-belvedere-nice",
-      file: "01",
-      focal: [50, 45] as const,
+      estate: "maison-du-chemin-saint-tropez",
+      file: "02",
+      focal: [50, 50] as const,
       eyebrow: "VIEWINGS",
       title: "In person, before ten.",
       body: "Viewings are private and held in the morning, when the light is level and the roads are empty.",
@@ -123,8 +127,8 @@ const raw = {
 
   estates: {
     title: "Estates",
-    /** `Nine houses between Cap-d'Ail and Ramatuelle.` The count word comes from the data. */
-    intro: (countWord: string) => `${countWord} houses between Cap-d'Ail and Ramatuelle.`,
+    /** `Eleven houses between Roquebrune and the Saint-Tropez peninsula.` The count word comes from the data. */
+    intro: (countWord: string) => `${countWord} houses between Roquebrune and the Saint-Tropez peninsula.`,
     lead: "Each is held on a private basis and shown by appointment. Prices are given where the seller allows; the others are available on request.",
     enquireLink: { label: "MAKE AN ENQUIRY", href: "/enquire" },
     rowLink: "VIEW THE HOUSE",
@@ -150,7 +154,7 @@ const raw = {
     blocks: (countWord: string) => [
       {
         title: "A few houses",
-        body: `${countWord} at present, between Cap-d'Ail and Ramatuelle. We would rather know each one well than list many.`,
+        body: `${countWord} at present, between Roquebrune and the Saint-Tropez peninsula. We would rather know each one well than list many.`,
       },
       {
         title: "Seen early",

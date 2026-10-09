@@ -3,7 +3,7 @@ import { estates, photoSrc, type Estate, type Photo, type Region } from "@/data/
 export type { Estate, Photo, Region };
 export { photoSrc };
 
-/** Published houses in index order (brief 7 table). */
+/** Published houses in index order (brief R2.1 table, order of beauty). */
 export function published(): Estate[] {
   return estates.filter((e) => e.published);
 }
@@ -27,15 +27,6 @@ export const regionLabel: Record<Region, string> = {
   mer: "Bord de mer",
   collines: "Collines",
 };
-
-/** The two index groups, in order, each with its published houses. */
-export function groups(): { region: Region; label: string; estates: Estate[] }[] {
-  return (["mer", "collines"] as const).map((region) => ({
-    region,
-    label: regionLabel[region],
-    estates: published().filter((e) => e.region === region),
-  }));
-}
 
 const PRICE_ON_REQUEST_FROM = 20_000_000;
 
@@ -64,7 +55,10 @@ export function specLine(e: Estate): string {
   return parts.join(" · ");
 }
 
-/** Estate intro eyebrow, `Èze, Bord de mer` (set in caps by the eyebrow style). */
+/**
+ * Estate intro and /estates row eyebrow (owner round 2), `Mougins, Collines`
+ * (set in caps by the eyebrow style).
+ */
 export function placeLine(e: Estate): string {
   return `${e.town}, ${regionLabel[e.region]}`;
 }
@@ -125,7 +119,7 @@ export function particulars(e: Estate): { term: string; value: string }[] {
 
 const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve"];
 
-/** `Nine`; the count word used in copy comes from the data. */
+/** `Eleven`; the count word used in copy comes from the data. */
 export function countWord(n: number = published().length): string {
   return WORDS[n] ?? String(n);
 }

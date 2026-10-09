@@ -1,6 +1,7 @@
 /**
- * The fourteen houses, typed. Nine are published (index order below), five are
- * held (`published: false`) so nothing from the research is lost.
+ * The twenty-two houses, typed. Eleven are published (index order below, owner
+ * round 2: in order of how beautiful the house is in its best frame); eleven
+ * are held (`published: false`) so nothing from the research is lost.
  *
  * `type`, `short`, `long`, `features`, `source_url`, `source_agency` and the
  * agency `ref` come unchanged from data/listings-*.json (brief 7). The only
@@ -12,6 +13,8 @@
  */
 import east from "../../data/listings-east.json" with { type: "json" };
 import west from "../../data/listings-west.json" with { type: "json" };
+import newEast from "../../data/listings-new-east.json" with { type: "json" };
+import newWest from "../../data/listings-new-west.json" with { type: "json" };
 
 export type Region = "mer" | "collines";
 export type Frame = "hero" | "wide" | "portrait" | "detail";
@@ -138,7 +141,12 @@ export type Estate = {
   indexFrame?: { file: string; focal: Focal };
 };
 
-const sources = [...(east as SourceListing[]), ...(west as SourceListing[])];
+const sources = [
+  ...(east as SourceListing[]),
+  ...(west as SourceListing[]),
+  ...(newEast as SourceListing[]),
+  ...(newWest as SourceListing[]),
+];
 
 function source(slug: string): SourceListing {
   const s = sources.find((l) => l.slug === slug);
@@ -210,48 +218,317 @@ const BASTIDE_GARDEN: Tune = {
   hue: 4,
   sharpen: 0,
 };
+/**
+ * Owner round 2: Bastide du Ciel's files are flat HDR (crunchy foliage, a
+ * render-like ochre). Less saturation, flatter contrast and no sharpening over
+ * the halos (as BASTIDE_GARDEN). The brief's hue +4 turned the skies lilac on
+ * the sheet (no lower green row here to offset it), so hue 0 and a neutral
+ * red row; the frames with open sky take a light sky pass too (CIEL_SKY).
+ */
+const CIEL: Tune = { saturation: 0.42, linear: [0.88, 18], hue: 0, red: [1.0, 0.06, 0.01], sharpen: 0 };
+const CIEL_SKY: Tune = { ...CIEL, sky: 0.6 };
 
 const own: Own[] = [
+  // Owner round 2 (villas first, brief R2.1): eleven houses in order of how
+  // beautiful the house is in its best frame. Every one opens on the house.
   {
-    slug: "villa-cap-fleuri",
-    sourceSlug: "villa-cap-fleuri-cap-dail",
+    slug: "mas-blanc-mougins",
+    sourceSlug: "mas-blanc-mougins",
     reference: "AM-0101",
+    published: true,
+    region: "collines",
+    outlook: "Hills and garden",
+    features: [
+      "Fully renovated",
+      "White walls in natural pigments",
+      "Stone floors and raw timber",
+      "Master suite with study and dressing room",
+      "Spa with gym, sauna and hammam",
+      "Wine cellar",
+      "Large pool with pool house",
+      "Boules court",
+    ],
+    gallery: [
+      // R2.5.2: the drone comes forward so the house is seen twice before
+      // the rooms; 03 comes back cut left of the kitchen, so the page no
+      // longer ends on a detail.
+      p("01", "hero", [50, 55], "standard", "White house above a reflecting pool", { tune: SKY }),
+      p("02", "wide", [50, 50], "strong", "The pool from above", { extract: [0, 0.22, 1, 0.78] }),
+      p("07", "portrait", [50, 50], "standard", "Linen pergola"),
+      p("05", "portrait", [40, 50], "interior", "Bedroom with an arched window", {
+        tune: { blue: [0.02, 0.06, 0.925] },
+      }),
+      p("04", "detail", [50, 50], "interior", "Timber beams", {
+        extract: [0.4, 0.02, 0.26, 0.46],
+        tune: { blue: [0.02, 0.06, 0.915] },
+      }),
+      // The brief's [0, 0, .7, 1] still showed the bar stools at its right
+      // edge: cut to the left 60%, at about 1.62, so nothing is cropped again.
+      p("03", "wide", [50, 50], "interior", "Dining room open to the garden", {
+        extract: [0, 0.2, 0.6, 0.6],
+        tune: { blue: [0.02, 0.06, 0.925] },
+      }),
+    ],
+  },
+  {
+    slug: "bastide-des-oliviers-vence",
+    sourceSlug: "bastide-des-oliviers-vence",
+    reference: "AM-0102",
+    published: true,
+    region: "collines",
+    outlook: "Garden and hills",
+    gallery: [
+      p("01", "hero", [65, 50], "garden", "The bastide across its lawn, among old olives", { tune: SKY }),
+      // The long pool stayed pale blue under the cyan pass, and at the
+      // brief's .42: saturation .32.
+      p("02", "wide", [50, 60], "garden", "The long pool, the pool house and the bastide", {
+        tune: { ...SKY, saturation: 0.32 },
+      }),
+      p("03", "portrait", [40, 50], "garden", "Vine pergola along the house"),
+      // Cut above the sill and its debris.
+      p("05", "portrait", [45, 50], "garden", "The garden through an open shutter", {
+        extract: [0.1, 0, 0.8, 0.86],
+      }),
+      p("08", "detail", [55, 45], "interior", "Arched windows in the vaulted salon", { tune: { pink: 0.6 } }),
+      p("07", "wide", [50, 50], "garden", "The bastide and its pool from above"),
+    ],
+  },
+  {
+    slug: "les-arcades-ramatuelle",
+    sourceSlug: "les-arcades-ramatuelle",
+    reference: "AM-0103",
+    published: true,
+    region: "mer",
+    outlook: "Sea and pines",
+    gallery: [
+      // Slightly soft at 100%, so a firmer sharpen than the default .4.
+      p("02", "hero", [50, 45], "standard", "The path between cypresses to the ivy covered door", {
+        tune: { ...SKY, sharpen: 0.6 },
+      }),
+      // The empty upper sky and, below 88%, the car court and the solar
+      // panels fall away.
+      p("01", "wide", [50, 40], "standard", "The white house among olives and pines, the sea beyond", {
+        extract: [0, 0.14, 1, 0.74],
+        tune: SKY,
+      }),
+      p("07", "portrait", [45, 50], "standard", "Arched loggias above the yuccas"),
+      p("08", "portrait", [40, 50], "strong", "Pergola table facing the sea"),
+      p("06", "detail", [25, 50], "strong", "A single umbrella pine over the pool and the sea", {
+        // The infinity pool stayed teal at .42: .3.
+        tune: { saturation: 0.3 },
+      }),
+      p("03", "wide", [50, 55], "garden", "The house among the umbrella pines", { tune: { saturation: 0.45 } }),
+    ],
+  },
+  {
+    slug: "villa-blanche-cap-dantibes",
+    sourceSlug: "villa-blanche-cap-dantibes",
+    reference: "AM-0104",
+    published: true,
+    region: "mer",
+    outlook: "Garden and pines",
+    gallery: [
+      // R2.5.2: the whole villa in the pines, pool in front. Cut right of the
+      // thatched pool bar; the sky pass at .75 so the cream facade is not
+      // lifted with the sky.
+      p("02", "hero", [50, 50], "strong", "The villa among the stone pines, its pool in front", {
+        extract: [0.16, 0.06, 0.84, 0.8],
+        // The pool stayed pale blue under the cyan pass, and at the brief's
+        // .42: saturation .32.
+        tune: { sky: 0.75, saturation: 0.32 },
+      }),
+      p("01", "wide", [50, 40], "strong", "The villa among the pines from above"),
+      p("03", "portrait", [58, 42], "strong", "The lantern tower and balconies", {
+        // The pool corner at bottom left stayed blue at .42: .32.
+        tune: { saturation: 0.32 },
+      }),
+      p("10", "portrait", [50, 45], "strong", "Entrance stair under plane trees"),
+      // Focal 50/0: the crop takes its 7% from the bottom. Cut above the
+      // pool's edge and right of the palm frond.
+      p("05", "wide", [50, 0], "strong", "Cream Belle Époque facade", {
+        extract: [0.05, 0, 0.95, 0.9],
+        tune: { sky: 0.75 },
+      }),
+      // Round 3: the neutral sky, a warmer red row and a light sky pass.
+      p("07", "detail", [40, 50], "strong", "Stone wall beneath a single pine", {
+        tune: { hue: 4, red: [1.02, 0.07, 0.01], sky: 0.6 },
+      }),
+      p("04", "wide", [50, 50], "strong", "The sea through stone pines"),
+    ],
+  },
+  {
+    slug: "villa-camille-roquebrune",
+    sourceSlug: "villa-camille-roquebrune",
+    reference: "AM-0105",
+    published: true,
+    region: "mer",
+    outlook: "Sea and Monaco",
+    gallery: [
+      // The deep Riviera blue is this house's weakness: the sky pass runs at
+      // full strength on every exterior.
+      // Saturation .4: the deep blue at the top left stayed slate at .5.
+      p("02", "hero", [50, 52], "strong", "The villa among olives and bougainvillea, the sea at right", {
+        tune: { ...SKY, saturation: 0.4 },
+      }),
+      // Shrinks the palm frond at top left.
+      p("01", "wide", [50, 60], "strong", "The forecourt facade and its curved stair", {
+        extract: [0.1, 0.08, 0.9, 0.92],
+        // The house fills the top of the frame, so the sky pass alone left
+        // the open sky at right slate blue: the neutral sky rows and
+        // saturation .32 as well.
+        tune: { ...NEUTRAL_SKY, ...SKY, saturation: 0.32 },
+      }),
+      p("07", "portrait", [35, 60], "strong", "Balustraded terrace over the open sea", { tune: { pink: 0.6 } }),
+      // Focal 62 keeps the diving board out on the left.
+      p("03", "portrait", [62, 40], "strong", "The villa above its pool terrace", {
+        // The pool stayed blue at .42 (the brief's value): .3.
+        tune: { ...SKY, saturation: 0.3 },
+      }),
+      // The bay, the cape and a yacht; the towers of Monaco fall outside.
+      p("08", "detail", [50, 50], "strong", "The bay below the house", {
+        extract: [0, 0.12, 0.5, 0.88],
+        tune: SKY,
+      }),
+      p("06", "wide", [50, 60], "strong", "The villa above Monaco and the coast", { tune: SKY }),
+    ],
+  },
+  {
+    slug: "maison-du-chemin-saint-tropez",
+    sourceSlug: "maison-du-chemin-saint-tropez",
+    reference: "AM-0106",
+    published: true,
+    region: "collines",
+    outlook: "Garden",
+    gallery: [
+      // Loses the loungers at right and the wire across the top.
+      p("06", "hero", [40, 40], "garden", "The second house across its lawn and pool, under old oaks", {
+        extract: [0, 0.08, 0.74, 0.92],
+        tune: SKY,
+      }),
+      p("02", "wide", [50, 50], "garden", "The facade behind an old tree, arched windows and agapanthus"),
+      p("04", "portrait", [30, 50], "garden", "Balcony and loggia under the vine"),
+      p("07", "portrait", [35, 50], "garden", "Table under the wisteria, the pool beyond"),
+      p("08", "detail", [45, 50], "interior", "Stone stair and iron rail"),
+      // Drops the loungers at the left.
+      p("05", "wide", [50, 50], "garden", "The long pool before the main house", {
+        extract: [0.15, 0, 0.85, 1],
+        tune: { sky: 0.6 },
+      }),
+    ],
+  },
+  {
+    slug: "bastide-du-ciel-gassin",
+    sourceSlug: "bastide-du-ciel-gassin",
+    reference: "AM-0107",
+    published: true,
+    region: "collines",
+    outlook: "Hills and sea",
+    gallery: [
+      p("02", "hero", [55, 55], "warm", "The ochre bastide between a cypress and a pine, the gulf beyond", {
+        tune: { ...CIEL, ...SKY },
+      }),
+      p("03", "wide", [50, 50], "warm", "Vine pergola along the house", { tune: CIEL_SKY }),
+      p("04", "portrait", [70, 50], "warm", "Shuttered courtyard", { tune: CIEL }),
+      p("05", "portrait", [65, 50], "warm", "The glass veranda", { tune: CIEL_SKY }),
+      p("01", "wide", [50, 50], "warm", "The house under a great umbrella pine", { tune: { ...CIEL, ...SKY } }),
+      p("06", "wide", [50, 50], "warm", "The pool below the cypress", { tune: CIEL_SKY }),
+      // A view, last, after six frames of the house.
+      p("09", "wide", [50, 50], "strong", "The hills to the Gulf of Saint-Tropez", { tune: { ...CIEL, ...SKY } }),
+    ],
+  },
+  {
+    slug: "le-mas-rose-ramatuelle",
+    sourceSlug: "le-mas-rose-ramatuelle",
+    reference: "AM-0108",
+    published: true,
+    region: "collines",
+    outlook: "Garden and pines",
+    gallery: [
+      p("01", "hero", [50, 50], "standard", "The rose house above its green pool, among pines and cypress", { tune: SKY }),
+      p("04", "wide", [50, 55], "garden", "The house in the pines, the sea beyond", { tune: SKY }),
+      p("03", "portrait", [45, 50], "standard", "Under the reed pergola"),
+      p("07", "portrait", [20, 50], "interior", "French windows open to the vines"),
+      // Blue skies beside the hero's warm grey: a light sky pass.
+      p("05", "detail", [40, 40], "standard", "Two cypresses over the pool", { tune: { sky: 0.6 } }),
+      p("06", "wide", [50, 50], "standard", "The long table under the pergola", { tune: { sky: 0.6 } }),
+    ],
+  },
+  {
+    slug: "bastide-des-pres-chateauneuf",
+    sourceSlug: "bastide-des-pres-chateauneuf",
+    reference: "AM-0109",
+    published: true,
+    region: "collines",
+    outlook: "Meadow and garden",
+    gallery: [
+      p("11", "hero", [50, 50], "warm", "The farmhouse beyond the pond", { tune: SKY }),
+      p("06", "wide", [50, 50], "warm", "Stone front door"),
+      p("03", "portrait", [50, 50], "interior", "Sitting room", {
+        tune: { red: [0.98, 0.03, 0], blue: [0.02, 0.07, 0.94] },
+      }),
+      p("04", "portrait", [50, 50], "interior", "Bedroom in linen", { tune: BASTIDE_WALLS }),
+      p("08", "detail", [50, 50], "warm", "Stone basin", { tune: BASTIDE_GARDEN }),
+      p("07", "wide", [50, 50], "warm", "Allée under the trees", { tune: { ...BASTIDE_GARDEN, pink: 0.8 } }),
+      p("10", "portrait", [50, 50], "warm", "Table under the plane tree", { tune: { ...BASTIDE_GARDEN, pink: 0.8 } }),
+      p("02", "portrait", [50, 50], "warm", "Shuttered facade"),
+      p("12", "wide", [50, 50], "warm", "The estate from above", { tune: BASTIDE_GARDEN }),
+    ],
+  },
+  {
+    slug: "domaine-des-vignes-saint-tropez",
+    sourceSlug: "domaine-des-vignes-saint-tropez",
+    reference: "AM-0110",
+    published: true,
+    region: "collines",
+    outlook: "Garden and vines",
+    gallery: [
+      // 01 (the house beyond the pool) leads; R2.5.2: 04, the drone of the
+      // main house, pool house and plunge pool, comes back second.
+      p("01", "hero", [50, 45], "garden", "The house beyond the pool", { tune: SKY }),
+      p("04", "wide", [50, 50], "garden", "The house and pool house among the pines", { tune: SKY }),
+      p("05", "wide", [50, 50], "interior", "Sitting room open to the garden", {
+        extract: [0.15, 0.15, 0.7, 0.7],
+        tune: VIGNES_WALLS,
+      }),
+      // Round 3: cut to the table, the garden door and the first beams.
+      p("06", "portrait", [50, 65], "interior", "Beams and stone floor", {
+        extract: [0.2, 0.2, 0.396, 0.78],
+        tune: VIGNES_WALLS,
+      }),
+      p("07", "portrait", [50, 50], "interior", "Bedroom to the garden", { tune: VIGNES_WALLS }),
+      p("03", "wide", [50, 50], "garden", "The house among the pines"),
+    ],
+  },
+  {
+    slug: "maison-edouard-beaulieu",
+    sourceSlug: "maison-edouard-beaulieu",
+    reference: "AM-0111",
     published: true,
     region: "mer",
     outlook: "Sea",
     builtApprox: true,
     gallery: [
-      // Round 2: the extract loses the neighbour's block on the left edge and
-      // the paving below, and keeps the red cushions small.
-      // Round 3: focal 50/0. The gable's peak sits a few pixels below the
-      // source's top edge, so every crop (1.62 and 4:5) keeps all of the top
-      // and loses the lower steps instead.
-      p("01", "hero", [50, 0], "standard", "White columned villa with a stone stair, facing the sea", {
-        extract: [0.23, 0, 0.62, 0.72],
-        tune: { ...NEUTRAL_SKY, ...SKY, ...CAP_FLEURI },
+      // R2.5.2: the hero is the villa, not the pool and the sea. The larger
+      // cream house up the hill is cut to a sliver at the top right.
+      p("01", "hero", [50, 50], "strong", "The villa on the hillside above its pool", {
+        extract: [0.08, 0.14, 0.66, 0.62],
+        tune: { ...NEUTRAL_SKY, ...SKY },
       }),
-      p("03", "wide", [50, 55], "strong", "Rocky shore below the garden", { tune: CAP_FLEURI }),
-      p("07", "portrait", [40, 50], "standard", "Villa steps beside the water", { tune: CAP_FLEURI }),
-      // The lower left only: a column, the paving and the bay; no apartment
-      // blocks on the hill and no red chairs.
-      p("06", "portrait", [65, 50], "strong", "Columned loggia over the bay", {
-        extract: [0.1, 0.4, 0.38, 0.6],
-        tune: CAP_FLEURI,
-      }),
-      // The shutter only, right of the drainpipe; a white wall, so it takes
-      // the `interior` preset's cream rather than standard's peach.
-      p("11", "detail", [50, 50], "interior", "White facade and shutters", {
-        extract: [0.865, 0.16, 0.135, 0.36],
-        tune: CAP_FLEURI,
-      }),
-      p("08", "wide", [50, 50], "standard", "Garden path to the rocks", { tune: CAP_FLEURI }),
+      p("02", "wide", [62, 50], "strong", "Olive tree beside an infinity pool and the sea", { tune: NEUTRAL_SKY }),
+      p("07", "portrait", [50, 50], "interior", "Winter garden"),
+      p("12", "portrait", [40, 50], "strong", "Pool and sea from the winter garden", { tune: NEUTRAL_SKY }),
+      // Round 2: the curtain and the window only, no sofa.
+      p("04", "detail", [50, 50], "interior", "Salon window", { extract: [0.14, 0.2, 0.22, 0.37] }),
+      p("11", "wide", [50, 50], "strong", "Pool along the garden wall"),
     ],
   },
+  // Held in round 2 (brief R2.1): their galleries stay so nothing is lost,
+  // but they are not graded, not routed and not deployed.
   {
     slug: "les-pins-eze",
     sourceSlug: "les-pins-eze-bord-de-mer",
-    reference: "AM-0102",
-    published: true,
+    reference: null,
+    published: false,
     region: "mer",
     outlook: "Sea",
     gallery: [
@@ -293,43 +570,12 @@ const own: Own[] = [
     ],
   },
   {
-    slug: "maison-edouard-beaulieu",
-    sourceSlug: "maison-edouard-beaulieu",
-    reference: "AM-0103",
-    published: true,
-    region: "mer",
-    outlook: "Sea",
-    builtApprox: true,
-    gallery: [
-      p("02", "hero", [62, 50], "strong", "Olive tree beside an infinity pool and the sea", {
-        tune: { ...NEUTRAL_SKY, ...SKY },
-      }),
-      // Round 2: the villa's upper floors and the hillside, not the aerial
-      // with the neighbours either side.
-      // Round 3: left and down, so the larger cream house up the hill is cut
-      // to a sliver at the right edge and the frame is one house.
-      p("01", "wide", [50, 50], "strong", "The villa on the hillside", {
-        extract: [0.14, 0.22, 0.56, 0.52],
-        tune: NEUTRAL_SKY,
-      }),
-      p("07", "portrait", [50, 50], "interior", "Winter garden"),
-      p("12", "portrait", [40, 50], "strong", "Pool and sea from the winter garden", { tune: NEUTRAL_SKY }),
-      // Round 2: the curtain and the window only, no sofa.
-      p("04", "detail", [50, 50], "interior", "Salon window", { extract: [0.14, 0.2, 0.22, 0.37] }),
-      p("11", "wide", [50, 50], "strong", "Pool along the garden wall"),
-    ],
-  },
-  {
     slug: "le-belvedere-nice",
     sourceSlug: "belvedere-cap-de-nice",
-    reference: "AM-0104",
-    published: true,
+    reference: null,
+    published: false,
     region: "mer",
     outlook: "Sea",
-    // Round 3: the deck hero has no building in it, so the index row shows
-    // the residence from the deck. Les Pins keeps its hero there: its only
-    // frames with the house in them (02, 03) are its loudest.
-    indexFrame: { file: "07", focal: [50, 50] },
     gallery: [
       // 05 is cut to the right two thirds without the sun's glare.
       // Round 3: the coastline second and the residence last, so the deck
@@ -345,113 +591,45 @@ const own: Own[] = [
     ],
   },
   {
-    slug: "villa-blanche-cap-dantibes",
-    sourceSlug: "villa-blanche-cap-dantibes",
-    reference: "AM-0105",
-    published: true,
+    slug: "villa-cap-fleuri",
+    sourceSlug: "villa-cap-fleuri-cap-dail",
+    reference: null,
+    published: false,
     region: "mer",
-    outlook: "Garden and pines",
+    outlook: "Sea",
+    builtApprox: true,
     gallery: [
-      // Focal 50/0: the 1.62 crop takes its 7% from the bottom, with the pool.
-      // The sky pass at .75 so the cream facade below it is not lifted too.
-      // Round 3: cut above the pool's edge and right of the palm frond, so
-      // neither the cyan strip nor the frond reaches the frame.
-      p("05", "hero", [50, 0], "strong", "Cream Belle Époque facade", {
-        extract: [0.05, 0, 0.95, 0.9],
-        tune: { sky: 0.75 },
+      // Round 2: the extract loses the neighbour's block on the left edge and
+      // the paving below, and keeps the red cushions small.
+      // Round 3: focal 50/0. The gable's peak sits a few pixels below the
+      // source's top edge, so every crop (1.62 and 4:5) keeps all of the top
+      // and loses the lower steps instead.
+      p("01", "hero", [50, 0], "standard", "White columned villa with a stone stair, facing the sea", {
+        extract: [0.23, 0, 0.62, 0.72],
+        tune: { ...NEUTRAL_SKY, ...SKY, ...CAP_FLEURI },
       }),
-      p("01", "wide", [50, 40], "strong", "The villa among the pines from above"),
-      p("10", "portrait", [50, 45], "strong", "Entrance stair under plane trees"),
-      // Round 3: the neutral sky, a warmer red row and a light sky pass, so
-      // its sky and stone print with the warm stair of 10 beside it.
-      p("07", "portrait", [40, 50], "strong", "Stone wall beneath a single pine", {
-        tune: { hue: 4, red: [1.02, 0.07, 0.01], sky: 0.6 },
+      p("03", "wide", [50, 55], "strong", "Rocky shore below the garden", { tune: CAP_FLEURI }),
+      p("07", "portrait", [40, 50], "standard", "Villa steps beside the water", { tune: CAP_FLEURI }),
+      // The lower left only: a column, the paving and the bay; no apartment
+      // blocks on the hill and no red chairs.
+      p("06", "portrait", [65, 50], "strong", "Columned loggia over the bay", {
+        extract: [0.1, 0.4, 0.38, 0.6],
+        tune: CAP_FLEURI,
       }),
-      p("04", "wide", [50, 50], "strong", "The sea through stone pines"),
-    ],
-  },
-  {
-    slug: "mas-blanc-mougins",
-    sourceSlug: "mas-blanc-mougins",
-    reference: "AM-0106",
-    published: true,
-    region: "collines",
-    outlook: "Hills and garden",
-    features: [
-      "Fully renovated",
-      "White walls in natural pigments",
-      "Stone floors and raw timber",
-      "Master suite with study and dressing room",
-      "Spa with gym, sauna and hammam",
-      "Wine cellar",
-      "Large pool with pool house",
-      "Boules court",
-    ],
-    gallery: [
-      // 03 dropped (the kitchen in its right third). 04 is cut to the beams
-      // and the lantern; 02 loses its band of cumulus.
-      p("01", "hero", [50, 55], "standard", "White house above a reflecting pool", { tune: SKY }),
-      p("07", "portrait", [50, 50], "standard", "Linen pergola"),
-      p("05", "portrait", [40, 50], "interior", "Bedroom with an arched window", {
-        tune: { blue: [0.02, 0.06, 0.925] },
+      // The shutter only, right of the drainpipe; a white wall, so it takes
+      // the `interior` preset's cream rather than standard's peach.
+      p("11", "detail", [50, 50], "interior", "White facade and shutters", {
+        extract: [0.865, 0.16, 0.135, 0.36],
+        tune: CAP_FLEURI,
       }),
-      p("04", "detail", [50, 50], "interior", "Timber beams", {
-        extract: [0.4, 0.02, 0.26, 0.46],
-        tune: { blue: [0.02, 0.06, 0.915] },
-      }),
-      p("02", "wide", [50, 50], "strong", "The pool from above", { extract: [0, 0.22, 1, 0.78] }),
-    ],
-  },
-  {
-    slug: "bastide-des-pres-chateauneuf",
-    sourceSlug: "bastide-des-pres-chateauneuf",
-    reference: "AM-0107",
-    published: true,
-    region: "collines",
-    outlook: "Meadow and garden",
-    gallery: [
-      p("11", "hero", [50, 50], "warm", "The farmhouse beyond the pond", { tune: SKY }),
-      p("06", "wide", [50, 50], "warm", "Stone front door"),
-      p("03", "portrait", [50, 50], "interior", "Sitting room", {
-        tune: { red: [0.98, 0.03, 0], blue: [0.02, 0.07, 0.94] },
-      }),
-      p("04", "portrait", [50, 50], "interior", "Bedroom in linen", { tune: BASTIDE_WALLS }),
-      p("08", "detail", [50, 50], "warm", "Stone basin", { tune: BASTIDE_GARDEN }),
-      p("07", "wide", [50, 50], "warm", "Allée under the trees", { tune: { ...BASTIDE_GARDEN, pink: 0.8 } }),
-      p("10", "portrait", [50, 50], "warm", "Table under the plane tree", { tune: { ...BASTIDE_GARDEN, pink: 0.8 } }),
-      p("02", "portrait", [50, 50], "warm", "Shuttered facade"),
-      p("12", "wide", [50, 50], "warm", "The estate from above", { tune: BASTIDE_GARDEN }),
-    ],
-  },
-  {
-    slug: "domaine-des-vignes-saint-tropez",
-    sourceSlug: "domaine-des-vignes-saint-tropez",
-    reference: "AM-0108",
-    published: true,
-    region: "collines",
-    outlook: "Garden and vines",
-    gallery: [
-      // 01 (the house beyond the pool) leads; 02 (mostly lawn) dropped; 05
-      // cut to its centre to lose the wide angle stretch at the edges.
-      p("01", "hero", [50, 45], "garden", "The house beyond the pool", { tune: SKY }),
-      p("05", "wide", [50, 50], "interior", "Sitting room open to the garden", {
-        extract: [0.15, 0.15, 0.7, 0.7],
-        tune: VIGNES_WALLS,
-      }),
-      // Round 3: cut to the table, the garden door and the first beams.
-      p("06", "portrait", [50, 65], "interior", "Beams and stone floor", {
-        extract: [0.2, 0.2, 0.396, 0.78],
-        tune: VIGNES_WALLS,
-      }),
-      p("07", "portrait", [50, 50], "interior", "Bedroom to the garden", { tune: VIGNES_WALLS }),
-      p("03", "wide", [50, 50], "garden", "The house among the pines"),
+      p("08", "wide", [50, 50], "standard", "Garden path to the rocks", { tune: CAP_FLEURI }),
     ],
   },
   {
     slug: "maison-des-collines-ramatuelle",
     sourceSlug: "maison-des-collines-ramatuelle",
-    reference: "AM-0109",
-    published: true,
+    reference: null,
+    published: false,
     region: "collines",
     outlook: "Sea",
     gallery: [
@@ -477,11 +655,13 @@ const own: Own[] = [
       p("10", "wide", [50, 40], "standard", "Pines to the distant sea"),
     ],
   },
-  // Held: kept in data, not graded, not deployed (brief 7).
+  { slug: "la-pinede-ramatuelle", sourceSlug: "la-pinede-ramatuelle", reference: null, published: false, region: "collines", outlook: null, gallery: [] },
+  { slug: "maison-du-cap-roquebrune", sourceSlug: "maison-du-cap-roquebrune", reference: null, published: false, region: "mer", outlook: null, gallery: [] },
+  { slug: "la-pergola-beaulieu", sourceSlug: "la-pergola-beaulieu", reference: null, published: false, region: "mer", outlook: null, gallery: [] },
+  // Held since round 1 (brief 7).
   { slug: "domaine-des-cypres-cap-ferrat", sourceSlug: "domaine-des-cypres-cap-ferrat", reference: null, published: false, region: "mer", outlook: null, gallery: [] },
   { slug: "bastide-de-la-rade-villefranche", sourceSlug: "bastide-de-la-rade-villefranche", reference: null, published: false, region: "mer", outlook: null, gallery: [] },
   { slug: "villa-lerins-cannes", sourceSlug: "villa-lerins-cannes", reference: null, published: false, region: "mer", outlook: null, gallery: [] },
-  { slug: "bastide-du-ciel-gassin", sourceSlug: "bastide-du-ciel-gassin", reference: null, published: false, region: "collines", outlook: null, gallery: [] },
   { slug: "lattique-saint-tropez", sourceSlug: "lattique-saint-tropez", reference: null, published: false, region: "collines", outlook: null, gallery: [] },
 ];
 
@@ -492,7 +672,7 @@ const own: Own[] = [
  */
 const curl = (t: string) => t.replace(/'/g, "\u2019");
 
-/** All fourteen houses; published ones first, in index order. */
+/** All twenty-two houses; published ones first, in index order. */
 export const estates: Estate[] = own.map((o) => {
   const s = source(o.sourceSlug);
   return {
