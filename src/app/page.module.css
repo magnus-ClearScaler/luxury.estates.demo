@@ -1,0 +1,36 @@
+/* Home (brief 6.1). Only what the shared classes do not cover. */
+
+/* Under the hero: left aligned, 640px, 64px below the film. */
+.intro {
+  margin-top: 64px;
+  margin-bottom: var(--section);
+}
+.introInner {
+  max-width: 640px;
+}
+.introTitle {
+  margin-top: 20px;
+}
+.introLink {
+  margin-top: 40px;
+}
+
+/* Statement, centred, 680px, then the 21:9 inset. */
+.statement {
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: center;
+}
+.statementImage {
+  margin-top: 64px;
+}
+@media (min-width: 768px) {
+  .statementImage {
+    margin-top: 96px;
+  }
+}
+
+/* The linen band keeps a paper margin above the linen footer. */
+.bandWrap {
+  margin-block: var(--section);
+}

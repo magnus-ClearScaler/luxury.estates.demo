@@ -1,0 +1,59 @@
+/* Brief 6.5: Enquire and its confirmation. */
+
+.page {
+  padding-top: clamp(56px, 7vw, 112px);
+  margin-bottom: var(--section);
+}
+
+.intro {
+  max-width: 640px;
+}
+.intro > h1 {
+  margin: 0;
+}
+.lead {
+  margin: 24px 0 0;
+}
+
+/* Form left (640px), portrait right; stacked on mobile, form first. */
+.grid {
+  margin-top: clamp(48px, 6vw, 88px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 80px;
+}
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: minmax(0, 640px) minmax(0, 1fr);
+    column-gap: clamp(48px, 7vw, 120px);
+    align-items: start;
+  }
+  .image {
+    width: 100%;
+    max-width: 560px;
+    justify-self: end;
+  }
+}
+
+/* /enquire/sent: a centred line of text above one wide photograph. */
+.sent {
+  padding-top: clamp(56px, 7vw, 112px);
+  margin-bottom: var(--section);
+}
+.sentText {
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: center;
+}
+.sentText > h1 {
+  margin: 0;
+}
+.sentLead {
+  margin: 24px 0 0;
+}
+.sentLink {
+  margin: 40px 0 0;
+}
+.sentImage {
+  margin-top: clamp(64px, 7vw, 104px);
+}

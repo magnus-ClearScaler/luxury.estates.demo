@@ -1,0 +1,78 @@
+/* Brief 6.2.5: zigzag row. Mobile first: stacked, image first. */
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.media {
+  display: block;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  padding-top: 24px; /* image to eyebrow */
+}
+
+.eyebrow {
+  margin: 0 0 20px; /* eyebrow to title */
+}
+
+.sentence {
+  margin: 12px 0 0; /* title to sentence */
+}
+
+.spec {
+  margin: 16px 0 0;
+}
+
+.foot {
+  margin-top: 40px; /* sentence to link */
+}
+
+.rule {
+  margin-top: 20px;
+}
+
+/* Desktop: image 894 x 552 at 1440 beside a 469px column. The text column
+   stretches to the image height so the link and its hairline line up with the
+   bottom edge of the photograph; the page sets the space between rows so one
+   row (image plus the paper below it) is at least 635px. */
+@media (min-width: 1024px) {
+  .row {
+    grid-template-columns: minmax(0, 894fr) minmax(0, 469fr);
+    column-gap: var(--col-gap);
+    align-items: stretch;
+  }
+
+  .media {
+    align-self: start;
+  }
+
+  .text {
+    padding-top: 0;
+    padding-left: 48px;
+  }
+
+  .flip {
+    grid-template-columns: minmax(0, 469fr) minmax(0, 894fr);
+  }
+
+  .flip .media {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .flip .text {
+    grid-column: 1;
+    grid-row: 1;
+    padding-left: 0;
+    padding-right: 48px;
+  }
+
+  /* Link pinned to the bottom of the image, above a hairline. */
+  .foot {
+    margin-top: auto;
+    padding-top: 40px;
+  }
+}

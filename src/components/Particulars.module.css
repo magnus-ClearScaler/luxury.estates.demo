@@ -1,0 +1,76 @@
+/* Brief 6.3.5. Desktop: the heading in the left half, the list in the right
+   half (as the prose above it), the list itself in two columns that fill
+   top to bottom so reading order matches the DOM. Mobile: one column. */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: 40px;
+}
+
+.title {
+  margin: 0;
+}
+
+.list {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 128px 1fr;
+  column-gap: 16px;
+  align-items: baseline;
+  padding-block: 14px;
+  border-bottom: 1px solid var(--hair);
+}
+
+.listStart {
+  border-top: 1px solid var(--hair);
+}
+
+.term {
+  margin: 0;
+}
+
+.value {
+  margin: 0;
+  color: var(--ink);
+}
+
+.features {
+  margin-top: 48px;
+}
+
+.featuresLabel {
+  margin: 0 0 16px;
+}
+
+.featureList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--text-gap);
+  }
+
+  .list {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(var(--rows), auto);
+    grid-auto-flow: column;
+    column-gap: var(--text-gap);
+  }
+
+  /* The second column opens with its own hairline. */
+  .colStart {
+    border-top: 1px solid var(--hair);
+  }
+}

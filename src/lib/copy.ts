@@ -146,6 +146,13 @@ export const copy = {
       consent: "You may keep my details to reply to this enquiry.",
       confidence: "Your enquiry is held in confidence.",
       send: "SEND",
+      /** Added with the form (not in the brief): server validation messages. */
+      errors: {
+        firstName: "Please add your first name.",
+        lastName: "Please add your last name.",
+        email: "Please add an email address we can reply to.",
+        consent: "We need your consent to reply.",
+      },
     },
     sent: {
       title: "Thank you.",

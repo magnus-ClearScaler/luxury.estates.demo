@@ -1,0 +1,54 @@
+/* Brief 6.2: Estates index. */
+.page {
+  padding-block: clamp(56px, 6.7vw, 96px) var(--section);
+}
+
+/* h2 at 300 left, lead right, 48px apart. */
+.intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 24px;
+  margin-top: clamp(40px, 4.4vw, 64px);
+}
+.intro h2 {
+  max-width: 24ch;
+}
+.nowrap {
+  white-space: nowrap;
+}
+.lead {
+  max-width: 640px;
+}
+@media (min-width: 1024px) {
+  .intro {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: var(--text-gap);
+  }
+}
+
+.centred {
+  margin-top: clamp(56px, 5.6vw, 80px);
+  text-align: center;
+}
+
+.group {
+  margin-top: var(--section);
+}
+.groupRule {
+  margin-top: 20px;
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  row-gap: clamp(72px, 7vw, 104px);
+  margin-top: clamp(48px, 4.4vw, 64px);
+}
+
+.closing {
+  margin-top: var(--section);
+  text-align: center;
+}
+.closingLink {
+  margin-top: 24px;
+}

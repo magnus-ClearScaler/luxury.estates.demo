@@ -1,0 +1,114 @@
+/* Colophon (brief 6.6). Text only, set like the back page of a book. */
+
+.page {
+  padding-top: clamp(56px, 7vw, 112px);
+  margin-bottom: var(--section);
+}
+
+.page h1 {
+  margin: 0;
+}
+
+.body {
+  margin: 24px 0 0;
+}
+
+.part {
+  margin-top: clamp(80px, 8vw, 120px);
+}
+
+.partTitle {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--hair);
+}
+
+/* ---------- Tables ---------- */
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 16px 32px 16px 0;
+  border-bottom: 1px solid var(--hair);
+}
+
+.table th:last-child,
+.table td:last-child {
+  padding-right: 0;
+}
+
+.table th {
+  font-family: var(--font-sans), sans-serif;
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.12em;
+  color: var(--umber);
+  padding-top: 24px;
+  white-space: nowrap;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--umber);
+}
+
+/* Under 1024px each row becomes a short list of label and value. */
+@media (max-width: 1023px) {
+  .table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .table,
+  .table tbody,
+  .table tr {
+    display: block;
+  }
+  .table tr {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--hair);
+  }
+  .table td {
+    display: grid;
+    grid-template-columns: 128px 1fr;
+    column-gap: 16px;
+    align-items: baseline;
+    padding: 4px 0;
+    border-bottom: 0;
+  }
+  .table td::before {
+    content: attr(data-label);
+    font-family: var(--font-sans), sans-serif;
+    font-size: 11px;
+    line-height: 24px;
+    letter-spacing: 0.12em;
+    color: var(--umber);
+  }
+  .nowrap {
+    white-space: normal;
+  }
+}
+
+/* ---------- Closing lines ---------- */
+
+.typeLine {
+  margin-top: 24px;
+}
+
+.madeBy {
+  margin-top: clamp(80px, 8vw, 120px);
+  padding-top: 24px;
+  border-top: 1px solid var(--hair);
+}

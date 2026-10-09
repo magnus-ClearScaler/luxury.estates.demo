@@ -1,0 +1,56 @@
+/* Brief 6.5: the enquiry form. 640px wide at most; labels above fields. */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 640px;
+}
+
+/* First and last name, email and telephone sit in pairs from 768px. */
+.pair {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+@media (min-width: 768px) {
+  .pair {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.error {
+  color: var(--ink);
+  margin: 0;
+}
+
+.consent {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.check > label {
+  cursor: pointer;
+}
+.check > input {
+  margin-top: 5px;
+}
+
+.confidence {
+  margin: 0;
+}
+
+.submit {
+  margin-top: 16px;
+}
+.submit > button:disabled {
+  cursor: default;
+  background: var(--umber);
+  border-color: var(--umber);
+}

@@ -1,0 +1,93 @@
+/* Brief 6.4: The House. Photographs inset on paper, very little text. */
+
+.intro {
+  padding-top: clamp(56px, 7vw, 112px);
+  text-align: center;
+}
+.lead {
+  max-width: 680px;
+  margin: 32px auto 0;
+}
+
+.wide {
+  margin-top: clamp(64px, 7vw, 104px);
+}
+
+/* Portrait left, three titled blocks right. Stacked on mobile, image first. */
+.pair {
+  margin-top: var(--section);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 48px;
+}
+.blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.block > h2 {
+  margin: 0;
+}
+.blockBody {
+  margin: 12px 0 0;
+}
+
+@media (min-width: 1024px) {
+  .pair {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: var(--text-gap);
+    align-items: center;
+  }
+  .blocks {
+    width: 100%;
+    max-width: 469px;
+    justify-self: center;
+  }
+}
+
+/* The floating detail: a 4:5 print 440px wide, under the text column on
+   desktop, with at least 8vw of paper either side on mobile. */
+.detailRow {
+  margin-top: var(--section);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.detail {
+  width: min(440px, calc(100% - 16vw));
+  justify-self: center;
+}
+@media (min-width: 1024px) {
+  .detailRow {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: var(--text-gap);
+  }
+  /* Same 469px column as the text above, so the print's left edge lines up
+     with the titles. */
+  .detail {
+    grid-column: 2;
+    width: 100%;
+    max-width: 469px;
+  }
+  .detail > :global(.frame) {
+    width: 440px;
+  }
+}
+
+.close {
+  margin-block: var(--section);
+  text-align: center;
+}
+.close > p {
+  margin: 0;
+}
+.closeLink {
+  margin-top: 24px !important;
+}
+
+/* The vault is a native 0.75:1 portrait in a 0.76:1 frame, so object-position
+   alone cannot lose the rubble floor (brief 6.4, focal 50/35). A fixed, static
+   crop from the top does: the bottom fifth of the file falls out of frame. */
+.portrait :global(img) {
+  transform: scale(1.25);
+  transform-origin: 50% 0;
+}

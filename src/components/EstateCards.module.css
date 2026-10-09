@@ -1,0 +1,52 @@
+/* Home estates row (brief 6.1.5). */
+.eyebrow {
+  margin: 0 0 32px;
+}
+
+.row {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: 56px;
+}
+
+@media (min-width: 768px) {
+  .row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: var(--col-gap);
+  }
+}
+
+.card {
+  display: block;
+  color: var(--ink);
+}
+
+/* Name left, town right, on one line; baselines aligned. */
+.caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  column-gap: 16px;
+  row-gap: 4px;
+  margin-top: 24px;
+}
+.name {
+  margin: 0;
+  transition: color 0.4s var(--ease);
+}
+.town {
+  white-space: nowrap;
+}
+/* The one hover response: the name settles to umber. No zoom, no lift. */
+.card:hover .name {
+  color: var(--umber);
+}
+
+.more {
+  margin-top: 48px;
+  text-align: right;
+}

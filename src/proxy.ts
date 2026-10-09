@@ -78,6 +78,9 @@ function gatePage(error: boolean): NextResponse {
 
 export async function proxy(req: NextRequest) {
   if (process.env.DEMO_GATE === "off") return NextResponse.next();
+  // Nested OG images (/estates/<slug>/opengraph-image) stay open too; the
+  // matcher only skips the root one.
+  if (/\/opengraph-image(?:-[\w-]+)?$/.test(req.nextUrl.pathname)) return NextResponse.next();
   if (req.cookies.get(COOKIE)?.value === PASSWORD) return NextResponse.next();
 
   if (req.method === "POST") {
