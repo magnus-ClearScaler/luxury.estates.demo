@@ -73,4 +73,12 @@
   .colStart {
     border-top: 1px solid var(--hair);
   }
+
+  /* With an odd number of rows the second column is one short: an empty
+     cell carries its closing hairline down to the first column's, so both
+     columns end on the same line. */
+  .odd::after {
+    content: "";
+    border-bottom: 1px solid var(--hair);
+  }
 }

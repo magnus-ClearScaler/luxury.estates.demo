@@ -115,7 +115,11 @@ export default function ColophonPage() {
                     <a href={r.sourceUrl} className="inline-link" {...external}>
                       {r.source}
                     </a>
-                    <span className={styles.muted}> · {r.licence}</span>
+                    {/* `Unsplash · Unsplash License` reads twice: the licence
+                        is named only when it is not the source's own. */}
+                    {r.licence.startsWith(r.source) ? null : (
+                      <span className={styles.muted}> · {r.licence}</span>
+                    )}
                   </span>
                 </td>
               </tr>

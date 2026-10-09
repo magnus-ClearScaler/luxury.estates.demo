@@ -14,7 +14,8 @@
 
   --gutter: clamp(16px, 1.7vw, 24px);
   --container: 1440px;
-  --section: clamp(80px, 10vw, 160px);
+  /* Owner round 1: tighter, because the hero carries the drama. */
+  --section: clamp(56px, 7vw, 112px);
   --col-gap: 37px;
   --text-gap: 48px;
   --header-h: 64px;
@@ -141,7 +142,7 @@ button {
 /* The one linen band per page (also used by Particulars). */
 .band {
   background: var(--linen);
-  padding-block: 80px;
+  padding-block: 64px;
 }
 
 .hairline {
@@ -404,6 +405,13 @@ select.input {
   background-size: 10px 6px;
   background-repeat: no-repeat;
 }
+/* The House select reads in umber while it still shows `Choose a house`. */
+select.input:has(option[value=""]:checked) {
+  color: var(--umber);
+}
+select.input option {
+  color: var(--ink);
+}
 .input:focus {
   outline: none;
   border-color: var(--ink);
@@ -501,7 +509,9 @@ select.input {
 .hero-film-video[data-playing="true"] {
   opacity: 1;
 }
-/* Desktop: inset at the gutter, 16:9, 65px below the header. */
+/* Desktop: inset at the gutter, 65px below the header, about 72vh tall
+   (owner round 1: no longer a full 16:9, so the page below shows in the
+   first screen). The film covers the box. */
 @media (min-width: 768px) {
   .hero-film-wrap {
     max-width: var(--container);
@@ -510,7 +520,9 @@ select.input {
     padding-top: 65px;
   }
   .hero-film {
-    aspect-ratio: 16 / 9;
+    aspect-ratio: auto;
+    width: 100%;
+    height: clamp(520px, 72vh, 760px);
   }
   .hero-film-media {
     object-position: 50% 50%;
@@ -518,14 +530,26 @@ select.input {
 }
 
 /* ---------- Header (brief 5.1) ---------- */
+/* The sticky box keeps its full height (88 desktop, 64 mobile) in the flow at
+   all times, so nothing below it moves when the bar compacts. It is clear and
+   lets clicks through; only the bar inside it is painted, and only the bar
+   shrinks from 88 to 64. */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 40;
+  height: var(--header-h);
+  background: transparent;
+  pointer-events: none;
+}
+.site-header-bar {
+  height: var(--header-h);
   background: transparent;
   border-bottom: 1px solid transparent;
+  pointer-events: auto;
+  transition: height 400ms var(--ease);
 }
-.site-header[data-compact="true"] {
+.site-header[data-compact="true"] .site-header-bar {
   background: var(--chalk);
   border-bottom-color: var(--hair);
 }
@@ -533,8 +557,7 @@ select.input {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  height: var(--header-h);
-  transition: height 400ms var(--ease);
+  height: 100%;
 }
 .site-header-left,
 .site-header-right,
@@ -577,7 +600,7 @@ select.input {
   background: var(--ink);
 }
 @media (min-width: 768px) {
-  .site-header[data-compact="true"] .site-header-inner {
+  .site-header[data-compact="true"] .site-header-bar {
     height: 64px;
   }
   .site-header-right {
@@ -697,6 +720,23 @@ select.input {
 .site-footer {
   background: var(--linen);
   padding-block: 80px 40px;
+}
+/* Where the page ends on a linen band (Home), the band runs on into the
+   footer as one linen ground, divided by a container-width hairline. */
+.footer-rule {
+  display: none;
+}
+body:has(.ends-on-band) .site-footer {
+  padding-top: 0;
+}
+body:has(.ends-on-band) .footer-rule {
+  display: block;
+  margin-bottom: 64px;
+}
+@media (min-width: 768px) {
+  body:has(.ends-on-band) .footer-rule {
+    margin-bottom: 80px;
+  }
 }
 .footer-grid {
   display: grid;

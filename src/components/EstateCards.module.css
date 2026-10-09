@@ -24,15 +24,23 @@
   color: var(--ink);
 }
 
-/* Name left, town right, on one line; baselines aligned. */
+/* Below 1200px the three captions are the same two-line stack (name, then
+   town), so a long town never wraps under one card and not the others. From
+   1200px: name left, town right, on one line, baselines aligned. */
 .caption {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  column-gap: 16px;
-  row-gap: 4px;
+  flex-direction: column;
+  align-items: flex-start;
+  row-gap: 8px;
   margin-top: 24px;
+}
+@media (min-width: 1200px) {
+  .caption {
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    column-gap: 16px;
+  }
 }
 .name {
   margin: 0;

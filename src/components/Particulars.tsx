@@ -20,7 +20,7 @@ export function Particulars({ estate }: { estate: Estate }) {
         </h2>
         <div className={styles.body}>
           <dl
-            className={styles.list}
+            className={`${styles.list} ${rows.length % 2 ? styles.odd : ""}`}
             style={{ "--rows": perColumn } as React.CSSProperties}
           >
             {rows.map((r, i) => (

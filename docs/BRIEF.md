@@ -4,6 +4,17 @@ Final, merged brief from both bosses (decision log: `docs/research/conductor-dec
 
 Repo: `/Users/magnusmb/luxury.estates.demo`. Dev port 3430. Vercel project `aubemar-demo` on the `magnus-clearscaler` account.
 
+
+## Owner feedback, round 1 (Magnus, 2026-10-09). Overrides the sections below where they conflict.
+
+Magnus viewed the first draft: "the feel is very luxurious, I like it". Keep the overall feel. Three changes:
+
+1. **Home must show the villas.** Today the home page leans on atmosphere photos (sea, shutters, leaf shadow). Swap so the home page photography is mainly the houses themselves: a terrace, a facade among the pines, a pool above the sea, from the 9 published estates (graded). Keep at most one atmosphere image on Home, and none in the feature slots. Choose the calmest, widest house frames.
+2. **Hero film is shorter.** Reduce the inset hero film on desktop from a full 16:9 to about 72vh tall (min 520px, max 760px), object-fit cover, still inset in the gutter. On mobile keep 4:5.
+3. **Tighter vertical rhythm because the hero carries the drama.** Section spacing goes from clamp(80px, 10vw, 160px) to clamp(56px, 7vw, 112px). Linen bands go from 80px to 64px padding. The space between the hero and the first statement becomes about 96px on desktop. Keep it calm and generous, but no section should feel like an empty screen.
+
+Also: the hero poster and film look soft. Re-encode from the highest-resolution source available (or pick a sharper free-licence clip), so the frame is crisp at 1440 width.
+
 ---
 
 ## 0. The site in one paragraph

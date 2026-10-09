@@ -5,10 +5,32 @@
  *
  * Image choices for each slot live in src/data/atmosphere.ts (atmosphere) and
  * below where the slot is an estate photograph.
+ *
+ * Apostrophes are straight here, as in data, and curly (U+2019) when rendered:
+ * `copy` is passed through `typo()` once, below.
  */
 import { NAME_DISPLAY, site } from "./site";
 
-export const copy = {
+/** Straight apostrophes to U+2019 for rendered prose (`Cap-d'Ail` → `Cap-d’Ail`). */
+export function typo<T extends string>(s: T): T {
+  return s.replace(/'/g, "\u2019") as T;
+}
+
+/** `typo()` over every string in a copy tree, including strings returned by functions. */
+function typoDeep<T>(v: T): T {
+  if (typeof v === "string") return typo(v) as T;
+  if (typeof v === "function") {
+    const fn = v as unknown as (...args: unknown[]) => unknown;
+    return ((...args: unknown[]) => typoDeep(fn(...args))) as T;
+  }
+  if (Array.isArray(v)) return v.map(typoDeep) as T;
+  if (v && typeof v === "object") {
+    return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, typoDeep(x)])) as T;
+  }
+  return v;
+}
+
+const raw = {
   meta: {
     titleDefault: NAME_DISPLAY,
     titleTemplate: `%s · ${NAME_DISPLAY}`,
@@ -49,17 +71,23 @@ export const copy = {
       title: "Houses between the hills and the sea.",
       link: { label: "THE ESTATES", href: "/estates" },
     },
+    /**
+     * Owner round 1: Home shows the houses. The feature pair and the linen
+     * band are estate photographs (slug and file; alt from the gallery entry).
+     */
     featureWide: {
-      estate: "les-pins-eze",
-      image: "/estates/les-pins-eze/01.jpg",
-      focal: [50, 40] as const,
-      alt: "Umbrella pines over the sea",
-      eyebrow: "ÈZE BORD DE MER",
-      title: "Les Pins",
-      body: "A new house of stone and pale oak among old umbrella pines, above the sea.",
-      link: { label: "VIEW THE HOUSE", href: "/estates/les-pins-eze" },
+      estate: "maison-des-collines-ramatuelle",
+      file: "01",
+      focal: [50, 50] as const,
+      eyebrow: "RAMATUELLE",
+      title: "Maison des Collines",
+      body: "A long, low house among the vines, looking across the hills to a distant sea.",
+      link: { label: "VIEW THE HOUSE", href: "/estates/maison-des-collines-ramatuelle" },
     },
     featurePortrait: {
+      estate: "villa-blanche-cap-dantibes",
+      file: "10",
+      focal: [50, 45] as const,
       eyebrow: "THE HOUSE",
       title: "Held quietly",
       body: "A small number of houses each year, each shown at the hour it is at its best.",
@@ -78,6 +106,9 @@ export const copy = {
       link: { label: "ALL THE HOUSES", href: "/estates" },
     },
     band: {
+      estate: "le-belvedere-nice",
+      file: "01",
+      focal: [50, 45] as const,
       eyebrow: "VIEWINGS",
       title: "In person, before ten.",
       body: "Viewings are private and held in the morning, when the light is level and the roads are empty.",
@@ -139,6 +170,8 @@ export const copy = {
       telephone: "Telephone",
       country: "Country of residence",
       house: "House",
+      /** Added in round 1 (not in the brief): the select's first, empty option. */
+      housePlaceholder: "Choose a house",
       houseOther: "A house not shown here",
       dates: "Preferred dates",
       message: "Message",
@@ -187,3 +220,5 @@ export const copy = {
     error: "Incorrect password.",
   },
 } as const;
+
+export const copy = typoDeep(raw);

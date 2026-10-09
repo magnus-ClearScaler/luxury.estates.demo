@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { EstateRow } from "@/components/EstateRow";
 import { TextLink } from "@/components/TextLink";
-import { copy } from "@/lib/copy";
+import { copy, typo } from "@/lib/copy";
 import { countWord, groups } from "@/lib/estates";
 import styles from "./estates.module.css";
 
@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: copy.estates.title };
  */
 /** Keeps `Cap-d'Ail` on one line so the heading never breaks at its hyphen. */
 function keepPlaceNames(text: string) {
-  const name = "Cap-d'Ail";
+  const name = typo("Cap-d'Ail");
   const at = text.indexOf(name);
   if (at < 0) return text;
   return (

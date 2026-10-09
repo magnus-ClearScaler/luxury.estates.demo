@@ -32,45 +32,27 @@
   margin: 12px 0 0;
 }
 
+/* The blocks hang from the top of the portrait, like a caption page. */
 @media (min-width: 1024px) {
   .pair {
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     column-gap: var(--text-gap);
-    align-items: center;
+    align-items: start;
   }
   .blocks {
     width: 100%;
     max-width: 469px;
     justify-self: center;
+    padding-top: 8px;
   }
 }
 
-/* The floating detail: a 4:5 print 440px wide, under the text column on
-   desktop, with at least 8vw of paper either side on mobile. */
-.detailRow {
-  margin-top: var(--section);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-}
+/* The floating detail: a 4:5 print 440px wide, centred on open paper with at
+   least 8vw either side, as on the estate pages (Sequence .detail). */
 .detail {
+  margin-top: var(--section);
   width: min(440px, calc(100% - 16vw));
-  justify-self: center;
-}
-@media (min-width: 1024px) {
-  .detailRow {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    column-gap: var(--text-gap);
-  }
-  /* Same 469px column as the text above, so the print's left edge lines up
-     with the titles. */
-  .detail {
-    grid-column: 2;
-    width: 100%;
-    max-width: 469px;
-  }
-  .detail > :global(.frame) {
-    width: 440px;
-  }
+  margin-inline: auto;
 }
 
 .close {
@@ -84,10 +66,5 @@
   margin-top: 24px !important;
 }
 
-/* The vault is a native 0.75:1 portrait in a 0.76:1 frame, so object-position
-   alone cannot lose the rubble floor (brief 6.4, focal 50/35). A fixed, static
-   crop from the top does: the bottom fifth of the file falls out of frame. */
-.portrait :global(img) {
-  transform: scale(1.25);
-  transform-origin: 50% 0;
-}
+/* The vault's rubble floor is cut in the grade step (scripts/grade.mjs,
+   extract in src/data/atmosphere.ts), not with a transform here. */

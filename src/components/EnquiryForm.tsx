@@ -134,7 +134,9 @@ export function EnquiryForm({ houses, house = "", message = "", className = "" }
       <div className="field">
         <label htmlFor={id("house")}>{f.house}</label>
         <select id={id("house")} name="house" className="input" defaultValue={v.house ?? house}>
-          <option value="" />
+          <option value="" disabled>
+            {f.housePlaceholder}
+          </option>
           {houses.map((h) => (
             <option key={h.slug} value={h.slug}>
               {h.name}

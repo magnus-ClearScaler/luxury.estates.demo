@@ -49,9 +49,9 @@
     align-self: start;
   }
 
+  /* The text and its hairline fill the 469px column, 37px from the image. */
   .text {
     padding-top: 0;
-    padding-left: 48px;
   }
 
   .flip {
@@ -66,8 +66,6 @@
   .flip .text {
     grid-column: 1;
     grid-row: 1;
-    padding-left: 0;
-    padding-right: 48px;
   }
 
   /* Link pinned to the bottom of the image, above a hairline. */

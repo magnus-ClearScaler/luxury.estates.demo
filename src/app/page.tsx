@@ -6,16 +6,29 @@ import { HeroFilm } from "@/components/HeroFilm";
 import { TextLink } from "@/components/TextLink";
 import { atmosphere } from "@/data/atmosphere";
 import { copy } from "@/lib/copy";
+import { bySlug, photoSrc } from "@/lib/estates";
 import s from "./page.module.css";
 
+/** An estate photograph for a Home slot: served path, focal, and the gallery alt. */
+function housePhoto(slot: { estate: string; file: string; focal: readonly [number, number] }) {
+  const e = bySlug(slot.estate);
+  const photo = e?.gallery.find((p) => p.file === slot.file);
+  if (!e || !photo) throw new Error(`Home photograph not in a published gallery: ${slot.estate}/${slot.file}`);
+  return { src: photoSrc(e.slug, photo.file), alt: photo.alt, focal: slot.focal };
+}
+
 /**
- * Home (brief 6.1): the film, one line under it, the feature pair, the
- * statement and its 21:9, three houses, the linen band. Nothing written on a
- * photograph, nothing moves on scroll. Main content stays under 120 words.
+ * Home (brief 6.1, owner round 1): the film, one line under it, the feature
+ * pair, the statement and its 21:9, three houses, the linen band. The houses
+ * carry the page: the feature pair and the band are estate photographs, the
+ * sailboat is the one atmosphere frame. Nothing written on a photograph,
+ * nothing moves on scroll. Main content stays under 120 words.
  */
 export default function Home() {
   const h = copy.home;
   const w = h.featureWide;
+  const p = h.featurePortrait;
+  const b = h.band;
 
   return (
     <>
@@ -35,14 +48,8 @@ export default function Home() {
 
       <section className="container-x section">
         <FeaturePair
-          wide={{
-            image: { src: w.image, alt: w.alt, focal: w.focal },
-            eyebrow: w.eyebrow,
-            title: w.title,
-            body: w.body,
-            link: w.link,
-          }}
-          portrait={{ image: atmosphere.homeFeature, ...h.featurePortrait }}
+          wide={{ image: housePhoto(w), eyebrow: w.eyebrow, title: w.title, body: w.body, link: w.link }}
+          portrait={{ image: housePhoto(p), eyebrow: p.eyebrow, title: p.title, body: p.body, link: p.link }}
         />
       </section>
 
@@ -63,8 +70,8 @@ export default function Home() {
         <EstateCards {...h.estatesRow} />
       </section>
 
-      <div className={s.bandWrap}>
-        <Band image={atmosphere.homeBand} {...h.band} />
+      <div className={`${s.bandWrap} ends-on-band`}>
+        <Band image={housePhoto(b)} eyebrow={b.eyebrow} title={b.title} body={b.body} link={b.link} />
       </div>
     </>
   );

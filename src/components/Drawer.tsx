@@ -13,7 +13,10 @@ import { nav } from "@/lib/site";
  * the closed panel is inert. Route changes close it via the parent's
  * `openedOn === pathname` state.
  */
-export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
+/** How the drawer was closed: focus goes back to MENU only for `keyboard`. */
+export type CloseReason = "keyboard" | "pointer";
+
+export function Drawer({ open, onClose }: { open: boolean; onClose: (reason: CloseReason) => void }) {
   const closeButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -22,7 +25,7 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
     document.body.style.overflow = "hidden";
     closeButton.current?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") onClose("keyboard");
     };
     window.addEventListener("keydown", onKey);
     return () => {
@@ -33,7 +36,7 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
 
   return (
     <div className="drawer-root" data-open={open ? "true" : "false"}>
-      <div className="drawer-backdrop" aria-hidden="true" onClick={onClose} />
+      <div className="drawer-backdrop" aria-hidden="true" onClick={() => onClose("pointer")} />
       <div
         id="site-drawer"
         className="drawer-panel"
@@ -47,7 +50,8 @@ export function Drawer({ open, onClose }: { open: boolean; onClose: () => void }
           type="button"
           className="drawer-close"
           aria-label={copy.drawer.close}
-          onClick={onClose}
+          // A keyboard activation fires a click with detail 0.
+          onClick={(e) => onClose(e.detail === 0 ? "keyboard" : "pointer")}
         >
           <span aria-hidden="true" />
           <span aria-hidden="true" />

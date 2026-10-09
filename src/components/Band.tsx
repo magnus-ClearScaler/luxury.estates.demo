@@ -11,7 +11,7 @@ export type BandProps = {
 
 /**
  * The linen band (brief 6.1.6): image left (wide, 1.62:1), text right in a
- * 469px column, vertically centred; 80px padding top and bottom. Stacked on
+ * 469px column, vertically centred; 64px padding top and bottom. Stacked on
  * mobile, image first. The h2 is the band's heading.
  */
 export function Band({ image, eyebrow, title, body, link }: BandProps) {

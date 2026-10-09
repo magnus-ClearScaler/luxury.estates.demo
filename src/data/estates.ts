@@ -15,9 +15,26 @@ import west from "../../data/listings-west.json" with { type: "json" };
 
 export type Region = "mer" | "collines";
 export type Frame = "hero" | "wide" | "portrait" | "detail";
-export type Grade = "soft" | "standard" | "strong" | "warm";
+export type Grade = "soft" | "standard" | "garden" | "strong" | "warm";
 /** `[x%, y%]`, used as CSS `object-position`. */
 export type Focal = readonly [number, number];
+
+/**
+ * A box cut from the source before it is resized, as fractions of the source
+ * `[left, top, width, height]`. Used where a crop by `focal` alone cannot hold
+ * a detail or lose something banned (scripts/grade.mjs).
+ */
+export type Extract = readonly [number, number, number, number];
+
+/** Per-image corrections on top of the preset (scripts/grade.mjs). */
+export type Tune = {
+  /** Replaces the preset's hue rotation, in degrees. */
+  hue?: number;
+  /** Replaces the preset's red recomb row. */
+  red?: readonly [number, number, number];
+  /** Replaces the preset's `linear(a, b)`. */
+  linear?: readonly [number, number];
+};
 
 export type Photo = {
   /** File number in the source folder, also the served name: `01` → `/estates/<slug>/01.jpg`. */
@@ -26,6 +43,8 @@ export type Photo = {
   focal: Focal;
   grade: Grade;
   alt: string;
+  extract?: Extract;
+  tune?: Tune;
 };
 
 type SourceListing = {
@@ -111,9 +130,17 @@ function p(
   focal: Focal,
   grade: Grade,
   alt: string,
+  more: { extract?: Extract; tune?: Tune } = {},
 ): Photo {
-  return { file, frame, focal, grade, alt };
+  return { file, frame, focal, grade, alt, ...more };
 }
+
+/**
+ * Blue sky originals that the warm red row and a negative hue push towards
+ * lilac (Maison Edouard 01, 02, 12; Villa Cap Fleuri 01). Aimed at the neutral
+ * grey beige sky of Maison des Collines 01.
+ */
+const NEUTRAL_SKY: Tune = { hue: 3, red: [0.99, 0.06, 0.01] };
 
 const own: Own[] = [
   {
@@ -125,11 +152,20 @@ const own: Own[] = [
     outlook: "Sea",
     builtApprox: true,
     gallery: [
-      p("01", "hero", [50, 45], "standard", "White columned villa with a stone stair, facing the sea"),
+      // Extract drops the neighbour's house on the left and the paving below.
+      p("01", "hero", [50, 45], "standard", "White columned villa with a stone stair, facing the sea", {
+        extract: [0.1, 0, 0.8, 0.75],
+        tune: NEUTRAL_SKY,
+      }),
       p("03", "wide", [50, 55], "strong", "Rocky shore below the garden"),
       p("07", "portrait", [40, 50], "standard", "Villa steps beside the water"),
-      p("06", "portrait", [20, 50], "standard", "Columned loggia over the bay"),
-      p("11", "detail", [70, 35], "standard", "White facade and shutters"),
+      // Focal 0/50 keeps the neighbour's cyan pool and the red chairs out;
+      // strong calms the bay and the cumulus that remain.
+      p("06", "portrait", [0, 50], "strong", "Columned loggia over the bay"),
+      // Shutters only: no sky, no bougainvillea.
+      p("11", "detail", [50, 50], "standard", "White facade and shutters", {
+        extract: [0.74, 0.13, 0.26, 0.41],
+      }),
       p("08", "wide", [50, 50], "standard", "Garden path to the rocks"),
     ],
   },
@@ -141,12 +177,13 @@ const own: Own[] = [
     region: "mer",
     outlook: "Sea",
     gallery: [
+      // 06 (TV, crane) and 11 (parked cars) dropped in round 1; the page
+      // closes on the diptych rather than the bath.
       p("01", "hero", [50, 40], "strong", "Umbrella pines over the sea"),
       p("03", "wide", [50, 50], "standard", "Pool between timber louvres"),
-      p("06", "portrait", [60, 50], "standard", "Bedroom opening to pines and sea"),
-      p("05", "portrait", [50, 50], "standard", "Living room open to the garden"),
       p("09", "detail", [45, 60], "standard", "Bath beneath a louvred window"),
-      p("11", "wide", [50, 60], "strong", "The coast from above"),
+      p("04", "portrait", [30, 50], "standard", "Dining room to the glass wall"),
+      p("05", "portrait", [50, 50], "standard", "Living room open to the garden"),
     ],
   },
   {
@@ -158,12 +195,13 @@ const own: Own[] = [
     outlook: "Sea",
     builtApprox: true,
     gallery: [
-      p("02", "hero", [62, 50], "standard", "Olive tree beside an infinity pool and the sea"),
-      p("01", "wide", [50, 50], "standard", "The villa on the hillside"),
+      p("02", "hero", [62, 50], "strong", "Olive tree beside an infinity pool and the sea", { tune: NEUTRAL_SKY }),
+      p("01", "wide", [50, 50], "strong", "The villa on the hillside", { tune: NEUTRAL_SKY }),
       p("07", "portrait", [50, 50], "standard", "Winter garden"),
-      p("12", "portrait", [40, 50], "strong", "Pool and sea from the winter garden"),
-      p("04", "detail", [20, 50], "standard", "Salon window"),
-      p("11", "wide", [50, 50], "standard", "Pool along the garden wall"),
+      p("12", "portrait", [40, 50], "strong", "Pool and sea from the winter garden", { tune: NEUTRAL_SKY }),
+      // Window, curtain and the arm of the sofa, not the whole salon.
+      p("04", "detail", [50, 50], "standard", "Salon window", { extract: [0.06, 0.2, 0.34, 0.64] }),
+      p("11", "wide", [50, 50], "strong", "Pool along the garden wall"),
     ],
   },
   {
@@ -174,11 +212,12 @@ const own: Own[] = [
     region: "mer",
     outlook: "Sea",
     gallery: [
+      // 06 dropped (a fifth pool, deck and sea); the diptych sits between
+      // the two remaining pool wides.
       p("01", "hero", [50, 45], "strong", "Deck, one lounger, the horizon"),
-      p("06", "wide", [50, 50], "strong", "Sea through leaves"),
+      p("05", "wide", [50, 55], "strong", "Coastline from the terrace"),
       p("02", "portrait", [50, 50], "strong", "Pool edge and sea"),
       p("08", "portrait", [50, 50], "strong", "Bedroom with a tall window"),
-      p("05", "wide", [50, 55], "strong", "Coastline from the terrace"),
       p("07", "wide", [50, 50], "strong", "The residence from the deck"),
     ],
   },
@@ -190,7 +229,8 @@ const own: Own[] = [
     region: "mer",
     outlook: "Garden and pines",
     gallery: [
-      p("05", "hero", [50, 40], "strong", "Cream Belle Époque facade"),
+      // Focal 50/0: the 1.62 crop takes its 7% from the bottom, with the pool.
+      p("05", "hero", [50, 0], "strong", "Cream Belle Époque facade"),
       p("01", "wide", [50, 40], "strong", "The villa among the pines from above"),
       p("10", "portrait", [50, 45], "strong", "Entrance stair under plane trees"),
       p("07", "portrait", [40, 50], "strong", "Stone wall beneath a single pine"),
@@ -215,12 +255,13 @@ const own: Own[] = [
       "Boules court",
     ],
     gallery: [
+      // 03 dropped (the kitchen in its right third). 04 is cut to the beams
+      // and the lantern; 02 loses its band of cumulus.
       p("01", "hero", [50, 55], "standard", "White house above a reflecting pool"),
-      p("03", "wide", [50, 50], "standard", "Dining room open to the garden"),
-      p("05", "portrait", [40, 50], "standard", "Bedroom with an arched window"),
       p("07", "portrait", [50, 50], "standard", "Linen pergola"),
-      p("04", "detail", [40, 30], "standard", "Timber beams"),
-      p("02", "wide", [50, 50], "standard", "The pool from above"),
+      p("05", "portrait", [40, 50], "standard", "Bedroom with an arched window"),
+      p("04", "detail", [50, 50], "standard", "Timber beams", { extract: [0.4, 0.02, 0.26, 0.46] }),
+      p("02", "wide", [50, 50], "strong", "The pool from above", { extract: [0, 0.22, 1, 0.78] }),
     ],
   },
   {
@@ -250,12 +291,13 @@ const own: Own[] = [
     region: "collines",
     outlook: "Garden and vines",
     gallery: [
-      p("02", "hero", [50, 40], "standard", "Umbrella pines over the lawn"),
-      p("05", "wide", [50, 50], "standard", "Sitting room open to the garden"),
+      // 01 (the house beyond the pool) leads; 02 (mostly lawn) dropped; 05
+      // cut to its centre to lose the wide angle stretch at the edges.
+      p("01", "hero", [50, 45], "garden", "The house beyond the pool"),
+      p("05", "wide", [50, 50], "garden", "Sitting room open to the garden", { extract: [0.15, 0.15, 0.7, 0.7] }),
       p("06", "portrait", [50, 50], "standard", "Beams and stone floor"),
       p("07", "portrait", [50, 50], "standard", "Bedroom to the garden"),
-      p("03", "wide", [50, 50], "standard", "The house among the pines"),
-      p("01", "wide", [50, 50], "standard", "The pool"),
+      p("03", "wide", [50, 50], "garden", "The house among the pines"),
     ],
   },
   {
@@ -270,7 +312,8 @@ const own: Own[] = [
       p("05", "wide", [50, 50], "standard", "Living room open to the garden"),
       p("06", "portrait", [50, 50], "standard", "Dining room"),
       p("07", "portrait", [75, 50], "standard", "Bedroom over the pool"),
-      p("09", "detail", [30, 50], "standard", "Facade and pool"),
+      // Agapanthus on the stone wall, not the whole facade.
+      p("09", "detail", [50, 50], "standard", "Agapanthus on a stone wall", { extract: [0.12, 0.44, 0.22, 0.49] }),
       p("10", "wide", [50, 40], "standard", "Pines to the distant sea"),
     ],
   },
@@ -282,6 +325,13 @@ const own: Own[] = [
   { slug: "lattique-saint-tropez", sourceSlug: "lattique-saint-tropez", reference: null, published: false, region: "collines", outlook: null, gallery: [] },
 ];
 
+/**
+ * Rendered prose takes the typographic apostrophe (U+2019); the source JSON
+ * keeps the straight one. Same rule as `typo()` in src/lib/copy.ts, repeated
+ * here so this module stays self-contained for scripts/grade.mjs.
+ */
+const curl = (t: string) => t.replace(/'/g, "\u2019");
+
 /** All fourteen houses; published ones first, in index order. */
 export const estates: Estate[] = own.map((o) => {
   const s = source(o.sourceSlug);
@@ -290,10 +340,10 @@ export const estates: Estate[] = own.map((o) => {
     sourceSlug: o.sourceSlug,
     reference: o.reference,
     published: o.published,
-    name: s.title,
-    town: s.town,
+    name: curl(s.title),
+    town: curl(s.town),
     region: o.region,
-    type: s.type,
+    type: curl(s.type),
     priceEur: s.price_eur,
     beds: s.beds,
     baths: s.baths,
@@ -302,11 +352,11 @@ export const estates: Estate[] = own.map((o) => {
     built: s.year_built,
     builtApprox: o.builtApprox ?? false,
     outlook: o.outlook,
-    short: s.short,
-    long: s.long,
-    features: o.features ?? s.features,
+    short: curl(s.short),
+    long: curl(s.long),
+    features: (o.features ?? s.features).map(curl),
     sourceUrl: s.source_url,
-    sourceAgency: s.source_agency,
+    sourceAgency: curl(s.source_agency),
     agencyRef: s.ref,
     gallery: o.gallery,
   };

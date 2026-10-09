@@ -27,7 +27,7 @@ export default function HousePage() {
       </div>
 
       <div className={`container-x ${styles.pair}`}>
-        <div className={styles.portrait}>
+        <div>
           <Frame
             src={portrait.src}
             alt={portrait.alt}
@@ -46,7 +46,7 @@ export default function HousePage() {
         </div>
       </div>
 
-      <div className={`container-x ${styles.detailRow}`}>
+      <div className="container-x">
         <div className={styles.detail}>
           <Frame
             src={detail.src}

@@ -11,7 +11,8 @@ import styles from "./EstateRow.module.css";
  * `short` sentence, the spec and price lines, and `VIEW THE HOUSE` pinned to
  * the bottom of the row above a hairline. `flip` puts the image on the right;
  * the alternation runs across the whole page, not per group. Stacked on
- * mobile, image first.
+ * mobile, image first, at 4:5 like the estate opening image so the index
+ * reads as photographs rather than a list.
  *
  * The photograph also opens the house, but it is kept out of the tab order
  * and the accessibility tree so the row carries one link, not two.
@@ -28,6 +29,7 @@ export function EstateRow({ estate, flip = false, eager = false }: { estate: Est
           alt={hero.alt}
           focal={hero.focal}
           ratio="wide"
+          mobileRatio="detail"
           sizes="(min-width:1024px) 62vw, 100vw"
           eager={eager}
         />

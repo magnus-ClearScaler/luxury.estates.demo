@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Grade acceptance test (brief section 8). Builds
- *   docs/qa/grade-contact-sheet.jpg   the six graded frames on paper
+ *   docs/qa/grade-contact-sheet.jpg   the graded acceptance set on paper
  *   docs/qa/grade-before-after.jpg    originals above, graded below
  * from the files in public/ (run scripts/grade.mjs first).
  */
@@ -20,6 +20,11 @@ const set = [
   ["estates/le-belvedere-nice/01.jpg", "listings/belvedere-cap-de-nice/01.jpg"],
   ["estates/mas-blanc-mougins/01.jpg", "listings/mas-blanc-mougins/01.jpg"],
   ["estates/villa-blanche-cap-dantibes/05.jpg", "listings/villa-blanche-cap-dantibes/05.jpg"],
+  // Round 1: the warm and garden presets and the neutral sky tune.
+  ["estates/bastide-des-pres-chateauneuf/11.jpg", "listings/bastide-des-pres-chateauneuf/11.jpg"],
+  ["estates/domaine-des-vignes-saint-tropez/01.jpg", "listings/domaine-des-vignes-saint-tropez/01.jpg"],
+  ["estates/maison-edouard-beaulieu/02.jpg", "listings/maison-edouard-beaulieu/02.jpg"],
+  ["estates/maison-des-collines-ramatuelle/01.jpg", "listings/maison-des-collines-ramatuelle/01.jpg"],
   ["atmosphere/sailboat-beige-sea.jpg", "atmosphere/sailboat-beige-sea.jpg"],
   ["atmosphere/terrace-sea-pale-morning.jpg", "atmosphere/terrace-sea-pale-morning.jpg"],
 ];
@@ -56,6 +61,12 @@ async function sheet(rows, out) {
 const graded = set.map(([g]) => join(ROOT, "public", g));
 const originals = set.map(([, o]) => join(ROOT, "assets/originals", o));
 
-await sheet([await row(graded.slice(0, 4)), await row(graded.slice(4))], join(ROOT, "docs/qa/grade-contact-sheet.jpg"));
-await sheet([await row(originals), await row(graded)], join(ROOT, "docs/qa/grade-before-after.jpg"));
+await sheet(
+  [await row(graded.slice(0, 4)), await row(graded.slice(4, 8)), await row(graded.slice(8))],
+  join(ROOT, "docs/qa/grade-contact-sheet.jpg"),
+);
+await sheet(
+  [await row(originals.slice(0, 5)), await row(graded.slice(0, 5)), await row(originals.slice(5)), await row(graded.slice(5))],
+  join(ROOT, "docs/qa/grade-before-after.jpg"),
+);
 console.log("contact sheets written to docs/qa/");

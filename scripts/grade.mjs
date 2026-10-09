@@ -20,13 +20,24 @@
  * (`gamma(1, g)`: x ^ (1/g), lifts the mid tones); a plain `gamma(g)` would
  * cancel itself out around the resize.
  *
- * FINAL PRESETS (tuned against docs/qa/grade-contact-sheet.jpg, 2026-10-09)
+ * FINAL PRESETS (tuned against docs/qa/grade-contact-sheet.jpg, round 1 2026-10-09)
  *
  *   preset    modulate                    linear     recomb rows R / G / B                                gamma
  *   soft      sat .90 bri 1.02            .95, 8     none                                                 1.00
  *   standard  sat .62 bri 1.02 hue -2     .89, 18    [.97,.08,.04]  [.01,.98,.01]  [.05,.11,.78]          1.04
+ *   garden    sat .52 bri 1.02 hue -2     .89, 18    [.97,.08,.04]  [.02,.94,.02]  [.05,.11,.78]          1.04
  *   strong    sat .50 bri 1.01 hue -4     .86, 22    [.95,.10,.05]  [.02,.96,.02]  [.07,.14,.70]          1.05
- *   warm      sat .68 bri 1.02            .90, 16    [.98,.06,.02]  [.01,.97,.01]  [.04,.09,.82]          1.04
+ *   warm      sat .55 bri 1.02            .90, 16    [.98,.06,.02]  [.01,.97,.01]  [.05,.11,.78]          1.04
+ *
+ * Per-image options live with the image in src/data (estates.ts, atmosphere.ts):
+ *   extract  [left, top, width, height] as fractions of the source, cut before
+ *            the resize (details that are whole rooms, a neighbour's house,
+ *            a band of HDR cloud, the vault's rubble floor).
+ *   tune     { hue, red, linear } replacing the preset's values for that image
+ *            (the blue sky originals that went lilac take hue +3 and a red row
+ *            of [.99,.06,.01]; the stone pine's white sky is held near chalk).
+ * The film poster is graded `soft` with sharpen sigma .6 at q90 (round 1: the
+ * q84 poster was soft and blocky at 1440).
  *
  * Brief starting values: standard sat .78 bri 1.03 linear .9,16 recomb
  * [1.03,.02,-.01] [.01,.99,0] [-.02,.01,.93]; strong sat .68 bri 1.04 linear
@@ -42,8 +53,10 @@
  *   row already lifts the facades.
  * - strong gamma 1.05 (from 1.06): 1.06 went milky with the warmer recomb.
  * - warm: Bastide des Pres was the greenest house on the sheet (bright lawn,
- *   blue sky); saturation .68 and a gentle cyan pull bring it into the set
- *   while it stays the warmest.
+ *   blue sky). Round 1 took it from .68 to .55 and gave it the standard blue
+ *   row, so its skies and lawns read with the rest of the index.
+ * - garden: Domaine des Vignes lawns stayed the most saturated green under
+ *   standard; garden is standard at .52 with a lower green row.
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, rmSync, statSync } from "node:fs";
@@ -86,13 +99,23 @@ export const PRESETS = {
     ],
     gamma: 1.05,
   },
+  garden: {
+    modulate: { saturation: 0.52, brightness: 1.02, hue: -2 },
+    linear: [0.89, 18],
+    recomb: [
+      [0.97, 0.08, 0.04],
+      [0.02, 0.94, 0.02],
+      [0.05, 0.11, 0.78],
+    ],
+    gamma: 1.04,
+  },
   warm: {
-    modulate: { saturation: 0.68, brightness: 1.02 },
+    modulate: { saturation: 0.55, brightness: 1.02 },
     linear: [0.9, 16],
     recomb: [
       [0.98, 0.06, 0.02],
       [0.01, 0.97, 0.01],
-      [0.04, 0.09, 0.82],
+      [0.05, 0.11, 0.78],
     ],
     gamma: 1.04,
   },
@@ -109,15 +132,46 @@ function fromRaw({ data, info }) {
   return sharp(data, { raw: { width: info.width, height: info.height, channels: info.channels } });
 }
 
-/** Grade one file to a JPEG at `out`. Exported for scripts/contact-sheet.mjs. */
-export async function gradeFile(input, out, presetName) {
-  const p = PRESETS[presetName];
-  if (!p) throw new Error(`Unknown preset ${presetName}`);
+/** Preset values with a per-image `tune` applied over them. */
+function tuned(p, tune = {}) {
+  const modulate = tune.hue != null ? { ...p.modulate, hue: tune.hue } : p.modulate;
+  const linear = tune.linear ?? p.linear;
+  let recomb = p.recomb;
+  if (tune.red) recomb = [[...tune.red], ...(recomb ?? [[1, 0, 0], [0, 1, 0], [0, 0, 1]]).slice(1)];
+  return { ...p, modulate, linear, recomb };
+}
 
-  // Pass 1: orient, size, modulate (sharp runs modulate after resize).
+/** An oriented sharp pipeline, cut to `extract` (fractions of the source) when given. */
+async function source(input, extract) {
+  const img = sharp(input).rotate();
+  if (!extract) return img;
+  const meta = await sharp(input).metadata();
+  const swap = (meta.orientation ?? 1) >= 5;
+  const w = swap ? meta.height : meta.width;
+  const h = swap ? meta.width : meta.height;
+  const [l, t, ew, eh] = extract;
+  const left = Math.round(l * w);
+  const top = Math.round(t * h);
+  return img.extract({
+    left,
+    top,
+    width: Math.min(Math.round(ew * w), w - left),
+    height: Math.min(Math.round(eh * h), h - top),
+  });
+}
+
+/**
+ * Grade one file to a JPEG at `out`. Exported for scripts/contact-sheet.mjs.
+ * `opts`: { extract, tune, sharpen = .4, quality = 84 }.
+ */
+export async function gradeFile(input, out, presetName, opts = {}) {
+  const base = PRESETS[presetName];
+  if (!base) throw new Error(`Unknown preset ${presetName}`);
+  const p = tuned(base, opts.tune);
+
+  // Pass 1: orient, cut, size, modulate (sharp runs modulate after resize).
   let img = await raw(
-    sharp(input)
-      .rotate()
+    (await source(input, opts.extract))
       .resize({ width: LONG_EDGE, height: LONG_EDGE, fit: "inside", withoutEnlargement: true })
       .removeAlpha()
       .toColourspace("srgb")
@@ -129,10 +183,10 @@ export async function gradeFile(input, out, presetName) {
   let last = fromRaw(img);
   if (p.recomb) last = last.recomb(p.recomb);
   if (p.gamma > 1) last = last.gamma(1, p.gamma);
-  last = last.sharpen({ sigma: 0.4 });
+  last = last.sharpen({ sigma: opts.sharpen ?? 0.4 });
 
   mkdirSync(dirname(out), { recursive: true });
-  await last.jpeg({ quality: 84, mozjpeg: true }).toFile(out);
+  await last.jpeg({ quality: opts.quality ?? 84, mozjpeg: true }).toFile(out);
 }
 
 function jobs() {
@@ -145,6 +199,7 @@ function jobs() {
         input: join(ORIG, "listings", e.sourceSlug, `${ph.file}.jpg`),
         out: join(PUB, "estates", e.slug, `${ph.file}.jpg`),
         preset: ph.grade,
+        opts: { extract: ph.extract, tune: ph.tune },
       });
     }
   }
@@ -154,6 +209,7 @@ function jobs() {
       input: join(ORIG, "atmosphere", `${a.name}.jpg`),
       out: join(PUB, "atmosphere", `${a.name}.jpg`),
       preset: a.grade,
+      opts: { extract: a.extract, tune: a.tune },
     });
   }
   return list;
@@ -163,7 +219,10 @@ async function poster() {
   const film = join(ORIG, "video", "sea-surface-warm-dusk.mp4");
   const frame = join(tmpdir(), "aubemar-poster-frame.png");
   execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-ss", "2", "-i", film, "-frames:v", "1", frame]);
-  await gradeFile(frame, join(PUB, "video", "sea-surface-warm-dusk-poster.jpg"), "soft");
+  await gradeFile(frame, join(PUB, "video", "sea-surface-warm-dusk-poster.jpg"), "soft", {
+    sharpen: 0.6,
+    quality: 90,
+  });
   rmSync(frame, { force: true });
 }
 
@@ -207,7 +266,7 @@ async function main() {
 
   let bytes = 0;
   for (const j of list) {
-    await gradeFile(j.input, j.out, j.preset);
+    await gradeFile(j.input, j.out, j.preset, j.opts);
     bytes += statSync(j.out).size;
   }
   if (!only || only.has("poster")) await poster();

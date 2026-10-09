@@ -1,9 +1,15 @@
 /* Home (brief 6.1). Only what the shared classes do not cover. */
 
-/* Under the hero: left aligned, 640px, 64px below the film. */
+/* Under the hero: left aligned, 640px; 64px below the film on mobile, 96px
+   on desktop (owner round 1). */
 .intro {
   margin-top: 64px;
   margin-bottom: var(--section);
+}
+@media (min-width: 768px) {
+  .intro {
+    margin-top: 96px;
+  }
 }
 .introInner {
   max-width: 640px;
@@ -30,7 +36,9 @@
   }
 }
 
-/* The linen band keeps a paper margin above the linen footer. */
+/* The linen band runs straight into the linen footer (no strip of paper
+   between them); the footer opens with a hairline (globals .footer-rule). */
 .bandWrap {
-  margin-block: var(--section);
+  margin-top: var(--section);
+  margin-bottom: 0;
 }

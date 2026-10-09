@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { copy } from "@/lib/copy";
-import { Drawer } from "./Drawer";
+import { Drawer, type CloseReason } from "./Drawer";
 import { Wordmark } from "./Wordmark";
 
 /**
@@ -12,7 +12,8 @@ import { Wordmark } from "./Wordmark";
  * Grid 1fr auto 1fr: MENU with two hairlines | wordmark | ENQUIRE.
  * Transparent on paper before scroll; chalk with a 1px hair rule once compact.
  * Never over a photograph, ink text always. Mobile: MENU, wordmark, nothing
- * right; 64px tall.
+ * right; 64px tall. The sticky box keeps 88px in the flow and only the bar
+ * inside it shrinks, so the page below never moves on scroll (globals.css).
  */
 export function Header() {
   const pathname = usePathname();
@@ -22,9 +23,12 @@ export function Header() {
   const [openedOn, setOpenedOn] = useState<string | null>(null);
   const open = openedOn === pathname;
   const menuButton = useRef<HTMLButtonElement>(null);
-  const close = useCallback(() => {
+  // Focus returns to MENU only when the drawer was closed from the keyboard,
+  // so pointer users never see the focus ring appear on it.
+  const close = useCallback((reason: CloseReason) => {
     setOpenedOn(null);
-    menuButton.current?.focus();
+    if (reason === "keyboard") menuButton.current?.focus();
+    else (document.activeElement as HTMLElement | null)?.blur();
   }, []);
 
   useEffect(() => {
@@ -37,30 +41,32 @@ export function Header() {
   return (
     <>
       <header className="site-header" data-compact={compact ? "true" : "false"}>
-        <div className="site-header-inner container-x">
-          <div className="site-header-left">
-            <button
-              ref={menuButton}
-              type="button"
-              className="menu-button t-nav"
-              aria-expanded={open}
-              aria-controls="site-drawer"
-              onClick={() => setOpenedOn(pathname)}
-            >
-              <span className="menu-glyph" aria-hidden="true">
-                <span />
-                <span />
-              </span>
-              <span>{copy.header.menu}</span>
-            </button>
-          </div>
-          <Link href="/" className="site-header-mark" aria-label={copy.header.homeLabel}>
-            <Wordmark className="header-wordmark" />
-          </Link>
-          <div className="site-header-right">
-            <Link href="/enquire" className="t-link header-enquire">
-              {copy.header.enquire}
+        <div className="site-header-bar">
+          <div className="site-header-inner container-x">
+            <div className="site-header-left">
+              <button
+                ref={menuButton}
+                type="button"
+                className="menu-button t-nav"
+                aria-expanded={open}
+                aria-controls="site-drawer"
+                onClick={() => setOpenedOn(pathname)}
+              >
+                <span className="menu-glyph" aria-hidden="true">
+                  <span />
+                  <span />
+                </span>
+                <span>{copy.header.menu}</span>
+              </button>
+            </div>
+            <Link href="/" className="site-header-mark" aria-label={copy.header.homeLabel}>
+              <Wordmark className="header-wordmark" />
             </Link>
+            <div className="site-header-right">
+              <Link href="/enquire" className="t-link header-enquire">
+                {copy.header.enquire}
+              </Link>
+            </div>
           </div>
         </div>
       </header>
