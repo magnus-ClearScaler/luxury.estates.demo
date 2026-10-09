@@ -68,7 +68,9 @@ export default function ColophonPage() {
                   {e.reference}
                 </td>
                 <td data-label={colTown}>{e.town}</td>
-                <td data-label={colAgency}>{e.sourceAgency}</td>
+                <td data-label={colAgency} className={styles.agency}>
+                  {e.sourceAgency}
+                </td>
                 <td data-label={colAgencyRef} className={styles.nowrap}>
                   {e.agencyRef}
                 </td>

@@ -15,7 +15,6 @@ export function Footer() {
   return (
     <footer className="site-footer">
       <div className="container-x">
-        <hr className="hairline footer-rule" aria-hidden="true" />
         <div className="footer-grid">
           <div>
             <Link href="/" aria-label={copy.header.homeLabel} className="footer-mark">

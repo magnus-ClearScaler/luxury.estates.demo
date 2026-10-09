@@ -396,7 +396,8 @@ textarea.input {
   height: auto;
   padding: 12px;
   line-height: 26px;
-  resize: vertical;
+  /* Round 2: no native resize grip; five rows is the brief. */
+  resize: none;
 }
 select.input {
   padding-right: 36px;
@@ -524,8 +525,11 @@ select.input option {
     width: 100%;
     height: clamp(520px, 72vh, 760px);
   }
+  /* Round 2: the inset box is about 2.15:1, so the film is cut top and
+     bottom; 50/30 keeps the horizon and the in-focus middle band of the
+     water and drops the blurred foreground. */
   .hero-film-media {
-    object-position: 50% 50%;
+    object-position: 50% 30%;
   }
 }
 
@@ -720,23 +724,6 @@ select.input option {
 .site-footer {
   background: var(--linen);
   padding-block: 80px 40px;
-}
-/* Where the page ends on a linen band (Home), the band runs on into the
-   footer as one linen ground, divided by a container-width hairline. */
-.footer-rule {
-  display: none;
-}
-body:has(.ends-on-band) .site-footer {
-  padding-top: 0;
-}
-body:has(.ends-on-band) .footer-rule {
-  display: block;
-  margin-bottom: 64px;
-}
-@media (min-width: 768px) {
-  body:has(.ends-on-band) .footer-rule {
-    margin-bottom: 80px;
-  }
 }
 .footer-grid {
   display: grid;

@@ -9,6 +9,16 @@
 #     clip (checked 2026-10-09: /download/video/33251147/ redirects to the
 #     1920x1080 file). The softness that remains is the clip's shallow depth
 #     of field, not compression.
+#     Round 2 (2026-10-09) checked again: the Pexels CDN has only
+#     14166155_1920_1080_24fps.mp4 for this clip; the 2560x1440 and 3840x2160
+#     names return 403 and /download/video/33251147/ still redirects to the
+#     1080p file. So the encodes are unchanged and the desktop film is framed
+#     at object-position 50% 30% instead (src/app/globals.css): the inset box
+#     is about 2.15:1 and that keeps the horizon and the in-focus middle band
+#     of the water, not the blurred foreground. sea-overcast-calm (34727351)
+#     was graded as an alternative for the owner to compare
+#     (docs/qa/r2/hero-film-options.jpg) but its water stays teal under the
+#     warm tune, so it is not deployed.
 #     The alternate sea-pale-horizon (4279371) exists at 2560x1440, but it is
 #     an aerial over a teal sea and would need a heavy grade to sit with the
 #     beige and silver set, so the dusk clip stays.

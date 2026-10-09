@@ -38,6 +38,8 @@ export type Atmosphere = {
   grade: Grade;
   extract?: Extract;
   tune?: Tune;
+  /** JPEG quality of the graded file; 84 unless set. */
+  quality?: number;
 };
 
 type Credit = {
@@ -59,7 +61,7 @@ function a(
   name: string,
   focal: readonly [number, number],
   alt: string,
-  more: { grade?: Grade; extract?: Extract; tune?: Tune } = {},
+  more: { grade?: Grade; extract?: Extract; tune?: Tune; quality?: number } = {},
 ): Atmosphere {
   const c = all.find((x) => x.file === `/atmosphere/${name}.jpg`);
   if (!c) throw new Error(`Missing atmosphere credit for ${name}`);
@@ -74,30 +76,48 @@ function a(
     grade: more.grade ?? "soft",
     extract: more.extract,
     tune: more.tune,
+    quality: more.quality,
   };
 }
 
 export const atmosphere: Record<AtmosphereSlot, Atmosphere> = {
-  homeStatement: a("sailboat-beige-sea", [50, 55], "A distant sail on a pale sea"),
+  // Round 2: graded from the full 5184px Unsplash original at q88; the
+  // earlier 2560px copy showed block steps in the 21:9 sky at 1440.
+  homeStatement: a("sailboat-beige-sea", [50, 55], "A distant sail on a pale sea", { quality: 88 }),
   // Standard, with the highlights held down and a neutral red row, so the
   // overcast sky lands near chalk rather than white (or peach) on the paper.
+  // Round 2: saturation .5 and a lower green row take the canopy to olive.
   houseWide: a("stone-pine-solitary", [50, 40], "A single umbrella pine against a pale sky", {
     grade: "standard",
-    tune: { red: [0.99, 0.03, 0], linear: [0.86, 22] },
+    tune: { red: [0.99, 0.03, 0], green: [0.03, 0.94, 0.03], linear: [0.86, 22], saturation: 0.5 },
   }),
   // The top 76% of the file cut to a 0.76 box: the rubble floor falls away
   // in the grade step, not with a CSS transform.
+  // Round 2: saturation .6, hue +5 and a neutral red row, so the vault reads
+  // as limestone, not rose plaster.
   housePortrait: a("limestone-vault", [50, 50], "A whitewashed limestone vault", {
     grade: "standard",
     extract: [0.115, 0, 0.77, 0.76],
+    tune: { saturation: 0.6, hue: 5, red: [0.99, 0.03, 0] },
   }),
+  // Round 2: lifted, so the wall reads warm off-white with a crisp stripe.
   houseDetail: a("shutter-light-on-wall", [50, 55], "Shutter light across a plaster wall", {
     grade: "warm",
-    tune: { linear: [0.88, 30] },
+    tune: { brightness: 1.18, linear: [1.05, 8] },
   }),
   // Focal 50/65: the grey water and the boat carry the crop, not the sky.
-  enquire: a("boat-still-water-dawn", [50, 65], "A rowing boat on still water at dawn", { grade: "standard" }),
-  enquireSent: a("linen-curtain-backlit", [50, 50], "Morning light through a linen curtain"),
+  // Round 2: a pale dawn rather than peach. The asked-for saturation .6 and
+  // hue +6 still read salmon beside the paper; .4, hue +10 and a lower red
+  // row land on grey beige.
+  enquire: a("boat-still-water-dawn", [50, 65], "A rowing boat on still water at dawn", {
+    grade: "standard",
+    tune: { saturation: 0.4, hue: 10, red: [0.95, 0.04, 0] },
+  }),
+  // Round 2: the quietest frame on the site, not the loudest: saturation .5
+  // and the shadows lifted.
+  enquireSent: a("linen-curtain-backlit", [50, 50], "Morning light through a linen curtain", {
+    tune: { saturation: 0.42, linear: [0.88, 24] },
+  }),
   notFound: a("sheer-curtain-window", [50, 50], "A sheer curtain at a tall window", {
     grade: "warm",
     tune: { linear: [0.9, 20] },

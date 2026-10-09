@@ -15,7 +15,7 @@ import west from "../../data/listings-west.json" with { type: "json" };
 
 export type Region = "mer" | "collines";
 export type Frame = "hero" | "wide" | "portrait" | "detail";
-export type Grade = "soft" | "standard" | "garden" | "strong" | "warm";
+export type Grade = "soft" | "standard" | "garden" | "strong" | "warm" | "interior";
 /** `[x%, y%]`, used as CSS `object-position`. */
 export type Focal = readonly [number, number];
 
@@ -32,8 +32,24 @@ export type Tune = {
   hue?: number;
   /** Replaces the preset's red recomb row. */
   red?: readonly [number, number, number];
+  /** Replaces the preset's green recomb row. */
+  green?: readonly [number, number, number];
+  /** Replaces the preset's blue recomb row. */
+  blue?: readonly [number, number, number];
   /** Replaces the preset's `linear(a, b)`. */
   linear?: readonly [number, number];
+  /** Replaces the preset's modulate saturation. */
+  saturation?: number;
+  /** Replaces the preset's modulate brightness. */
+  brightness?: number;
+  /**
+   * Graduated sky pass (round 2): the bright pixels of the upper frame are
+   * moved, texture kept, so the mean of the top 12% lands on the one sky
+   * target. `true` for full strength, or a strength between 0 and 1.
+   */
+  sky?: boolean | number;
+  /** `false` turns off the hue-selective cyan pass the listing presets run. */
+  cyan?: boolean;
 };
 
 export type Photo = {
@@ -142,6 +158,24 @@ function p(
  */
 const NEUTRAL_SKY: Tune = { hue: 3, red: [0.99, 0.06, 0.01] };
 
+/**
+ * Round 2: every hero takes the graduated sky pass, so the nine skies on
+ * /estates meet on one warm grey (scripts/grade.mjs, SKY_TARGET #D8D4CB).
+ */
+const SKY: Tune = { sky: true };
+
+/** Round 2: Villa Cap Fleuri was graded milky; its contrast is held at .93/10. */
+const CAP_FLEURI: Tune = { linear: [0.93, 10] };
+
+/**
+ * Round 2 interior corrections on top of the `interior` preset, so a white
+ * wall lands on the same cream across houses: Collines' cool originals take a
+ * little more red, Vignes' and Mas Blanc's warm ones a little more blue.
+ */
+const COLLINES_WALLS: Tune = { red: [1.0, 0.04, 0], brightness: 1.08 };
+const VIGNES_WALLS: Tune = { blue: [0.02, 0.07, 0.92], brightness: 1.08 };
+const BASTIDE_WALLS: Tune = { blue: [0.02, 0.06, 0.92] };
+
 const own: Own[] = [
   {
     slug: "villa-cap-fleuri",
@@ -152,21 +186,27 @@ const own: Own[] = [
     outlook: "Sea",
     builtApprox: true,
     gallery: [
-      // Extract drops the neighbour's house on the left and the paving below.
+      // Round 2: the extract loses the neighbour's block on the left edge and
+      // the paving below, and keeps the red cushions small.
       p("01", "hero", [50, 45], "standard", "White columned villa with a stone stair, facing the sea", {
-        extract: [0.1, 0, 0.8, 0.75],
-        tune: NEUTRAL_SKY,
+        extract: [0.23, 0, 0.62, 0.72],
+        tune: { ...NEUTRAL_SKY, ...SKY, ...CAP_FLEURI },
       }),
-      p("03", "wide", [50, 55], "strong", "Rocky shore below the garden"),
-      p("07", "portrait", [40, 50], "standard", "Villa steps beside the water"),
-      // Focal 0/50 keeps the neighbour's cyan pool and the red chairs out;
-      // strong calms the bay and the cumulus that remain.
-      p("06", "portrait", [0, 50], "strong", "Columned loggia over the bay"),
-      // Shutters only: no sky, no bougainvillea.
-      p("11", "detail", [50, 50], "standard", "White facade and shutters", {
-        extract: [0.74, 0.13, 0.26, 0.41],
+      p("03", "wide", [50, 55], "strong", "Rocky shore below the garden", { tune: CAP_FLEURI }),
+      p("07", "portrait", [40, 50], "standard", "Villa steps beside the water", { tune: CAP_FLEURI }),
+      // The lower left only: a column, the paving and the bay; no apartment
+      // blocks on the hill and no red chairs.
+      p("06", "portrait", [65, 50], "strong", "Columned loggia over the bay", {
+        extract: [0.1, 0.4, 0.38, 0.6],
+        tune: CAP_FLEURI,
       }),
-      p("08", "wide", [50, 50], "standard", "Garden path to the rocks"),
+      // The shutter only, right of the drainpipe; a white wall, so it takes
+      // the `interior` preset's cream rather than standard's peach.
+      p("11", "detail", [50, 50], "interior", "White facade and shutters", {
+        extract: [0.865, 0.16, 0.135, 0.36],
+        tune: CAP_FLEURI,
+      }),
+      p("08", "wide", [50, 50], "standard", "Garden path to the rocks", { tune: CAP_FLEURI }),
     ],
   },
   {
@@ -177,13 +217,19 @@ const own: Own[] = [
     region: "mer",
     outlook: "Sea",
     gallery: [
-      // 06 (TV, crane) and 11 (parked cars) dropped in round 1; the page
-      // closes on the diptych rather than the bath.
-      p("01", "hero", [50, 40], "strong", "Umbrella pines over the sea"),
+      // Round 2: the hero is cut above the glass rail (its top edge sits at
+      // 68% of the source), so the frame is pines over the sea, without the
+      // rail, the lawn or the black column. The page then runs pool,
+      // rooms, bath and closes on the coast (11, cut above the parked cars).
+      p("01", "hero", [45, 50], "strong", "Umbrella pines over the sea", {
+        extract: [0, 0.02, 0.88, 0.66],
+        tune: SKY,
+      }),
       p("03", "wide", [50, 50], "standard", "Pool between timber louvres"),
-      p("09", "detail", [45, 60], "standard", "Bath beneath a louvred window"),
-      p("04", "portrait", [30, 50], "standard", "Dining room to the glass wall"),
-      p("05", "portrait", [50, 50], "standard", "Living room open to the garden"),
+      p("04", "portrait", [30, 50], "interior", "Dining room to the glass wall"),
+      p("05", "portrait", [50, 50], "interior", "Living room open to the garden"),
+      p("09", "detail", [45, 60], "interior", "Bath beneath a louvred window"),
+      p("11", "wide", [50, 60], "strong", "The coast from above", { extract: [0.06, 0, 0.74, 0.6], tune: SKY }),
     ],
   },
   {
@@ -195,12 +241,19 @@ const own: Own[] = [
     outlook: "Sea",
     builtApprox: true,
     gallery: [
-      p("02", "hero", [62, 50], "strong", "Olive tree beside an infinity pool and the sea", { tune: NEUTRAL_SKY }),
-      p("01", "wide", [50, 50], "strong", "The villa on the hillside", { tune: NEUTRAL_SKY }),
-      p("07", "portrait", [50, 50], "standard", "Winter garden"),
+      p("02", "hero", [62, 50], "strong", "Olive tree beside an infinity pool and the sea", {
+        tune: { ...NEUTRAL_SKY, ...SKY },
+      }),
+      // Round 2: the villa's upper floors and the hillside, not the aerial
+      // with the neighbours either side.
+      p("01", "wide", [50, 50], "strong", "The villa on the hillside", {
+        extract: [0.24, 0.1, 0.54, 0.5],
+        tune: NEUTRAL_SKY,
+      }),
+      p("07", "portrait", [50, 50], "interior", "Winter garden"),
       p("12", "portrait", [40, 50], "strong", "Pool and sea from the winter garden", { tune: NEUTRAL_SKY }),
-      // Window, curtain and the arm of the sofa, not the whole salon.
-      p("04", "detail", [50, 50], "standard", "Salon window", { extract: [0.06, 0.2, 0.34, 0.64] }),
+      // Round 2: the curtain and the window only, no sofa.
+      p("04", "detail", [50, 50], "interior", "Salon window", { extract: [0.14, 0.2, 0.22, 0.37] }),
       p("11", "wide", [50, 50], "strong", "Pool along the garden wall"),
     ],
   },
@@ -212,13 +265,14 @@ const own: Own[] = [
     region: "mer",
     outlook: "Sea",
     gallery: [
-      // 06 dropped (a fifth pool, deck and sea); the diptych sits between
-      // the two remaining pool wides.
-      p("01", "hero", [50, 45], "strong", "Deck, one lounger, the horizon"),
-      p("05", "wide", [50, 55], "strong", "Coastline from the terrace"),
-      p("02", "portrait", [50, 50], "strong", "Pool edge and sea"),
-      p("08", "portrait", [50, 50], "strong", "Bedroom with a tall window"),
+      // Round 2: the residence second, so three pool and sea frames never
+      // run together; 05 closes, cut to the right two thirds without the
+      // sun's glare.
+      p("01", "hero", [50, 45], "strong", "Deck, one lounger, the horizon", { tune: SKY }),
       p("07", "wide", [50, 50], "strong", "The residence from the deck"),
+      p("02", "portrait", [50, 50], "strong", "Pool edge and sea"),
+      p("08", "portrait", [50, 50], "interior", "Bedroom with a tall window"),
+      p("05", "wide", [50, 55], "strong", "Coastline from the terrace", { extract: [0.33, 0.28, 0.67, 0.72] }),
     ],
   },
   {
@@ -230,7 +284,8 @@ const own: Own[] = [
     outlook: "Garden and pines",
     gallery: [
       // Focal 50/0: the 1.62 crop takes its 7% from the bottom, with the pool.
-      p("05", "hero", [50, 0], "strong", "Cream Belle Époque facade"),
+      // The sky pass at .75 so the cream facade below it is not lifted too.
+      p("05", "hero", [50, 0], "strong", "Cream Belle Époque facade", { tune: { sky: 0.75 } }),
       p("01", "wide", [50, 40], "strong", "The villa among the pines from above"),
       p("10", "portrait", [50, 45], "strong", "Entrance stair under plane trees"),
       p("07", "portrait", [40, 50], "strong", "Stone wall beneath a single pine"),
@@ -257,10 +312,15 @@ const own: Own[] = [
     gallery: [
       // 03 dropped (the kitchen in its right third). 04 is cut to the beams
       // and the lantern; 02 loses its band of cumulus.
-      p("01", "hero", [50, 55], "standard", "White house above a reflecting pool"),
+      p("01", "hero", [50, 55], "standard", "White house above a reflecting pool", { tune: SKY }),
       p("07", "portrait", [50, 50], "standard", "Linen pergola"),
-      p("05", "portrait", [40, 50], "standard", "Bedroom with an arched window"),
-      p("04", "detail", [50, 50], "standard", "Timber beams", { extract: [0.4, 0.02, 0.26, 0.46] }),
+      p("05", "portrait", [40, 50], "interior", "Bedroom with an arched window", {
+        tune: { blue: [0.02, 0.06, 0.925] },
+      }),
+      p("04", "detail", [50, 50], "interior", "Timber beams", {
+        extract: [0.4, 0.02, 0.26, 0.46],
+        tune: { blue: [0.02, 0.06, 0.915] },
+      }),
       p("02", "wide", [50, 50], "strong", "The pool from above", { extract: [0, 0.22, 1, 0.78] }),
     ],
   },
@@ -272,10 +332,12 @@ const own: Own[] = [
     region: "collines",
     outlook: "Meadow and garden",
     gallery: [
-      p("11", "hero", [50, 50], "warm", "The farmhouse beyond the pond"),
+      p("11", "hero", [50, 50], "warm", "The farmhouse beyond the pond", { tune: SKY }),
       p("06", "wide", [50, 50], "warm", "Stone front door"),
-      p("03", "portrait", [50, 50], "warm", "Sitting room"),
-      p("04", "portrait", [50, 50], "warm", "Bedroom in linen"),
+      p("03", "portrait", [50, 50], "interior", "Sitting room", {
+        tune: { red: [0.98, 0.03, 0], blue: [0.02, 0.07, 0.94] },
+      }),
+      p("04", "portrait", [50, 50], "interior", "Bedroom in linen", { tune: BASTIDE_WALLS }),
       p("08", "detail", [50, 50], "warm", "Stone basin"),
       p("07", "wide", [50, 50], "warm", "Allée under the trees"),
       p("10", "portrait", [50, 50], "warm", "Table under the plane tree"),
@@ -293,10 +355,13 @@ const own: Own[] = [
     gallery: [
       // 01 (the house beyond the pool) leads; 02 (mostly lawn) dropped; 05
       // cut to its centre to lose the wide angle stretch at the edges.
-      p("01", "hero", [50, 45], "garden", "The house beyond the pool"),
-      p("05", "wide", [50, 50], "garden", "Sitting room open to the garden", { extract: [0.15, 0.15, 0.7, 0.7] }),
-      p("06", "portrait", [50, 50], "standard", "Beams and stone floor"),
-      p("07", "portrait", [50, 50], "standard", "Bedroom to the garden"),
+      p("01", "hero", [50, 45], "garden", "The house beyond the pool", { tune: SKY }),
+      p("05", "wide", [50, 50], "interior", "Sitting room open to the garden", {
+        extract: [0.15, 0.15, 0.7, 0.7],
+        tune: VIGNES_WALLS,
+      }),
+      p("06", "portrait", [50, 50], "interior", "Beams and stone floor", { tune: VIGNES_WALLS }),
+      p("07", "portrait", [50, 50], "interior", "Bedroom to the garden", { tune: VIGNES_WALLS }),
       p("03", "wide", [50, 50], "garden", "The house among the pines"),
     ],
   },
@@ -308,10 +373,11 @@ const own: Own[] = [
     region: "collines",
     outlook: "Sea",
     gallery: [
-      p("01", "hero", [50, 50], "strong", "The house in the hills"),
-      p("05", "wide", [50, 50], "standard", "Living room open to the garden"),
-      p("06", "portrait", [50, 50], "standard", "Dining room"),
-      p("07", "portrait", [75, 50], "standard", "Bedroom over the pool"),
+      // Round 2: `standard` (strong turned the vines mustard) with the sky pass.
+      p("01", "hero", [50, 50], "standard", "The house in the hills", { tune: SKY }),
+      p("05", "wide", [50, 50], "interior", "Living room open to the garden", { tune: COLLINES_WALLS }),
+      p("06", "portrait", [50, 50], "interior", "Dining room", { tune: COLLINES_WALLS }),
+      p("07", "portrait", [75, 50], "interior", "Bedroom over the pool", { tune: COLLINES_WALLS }),
       // Agapanthus on the stone wall, not the whole facade.
       p("09", "detail", [50, 50], "standard", "Agapanthus on a stone wall", { extract: [0.12, 0.44, 0.22, 0.49] }),
       p("10", "wide", [50, 40], "standard", "Pines to the distant sea"),

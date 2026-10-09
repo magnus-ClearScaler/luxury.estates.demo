@@ -24,8 +24,11 @@
 
 /* ---------- Tables ---------- */
 
+/* Round 2: the tables size to their content (capped at the container)
+   rather than stretching six short columns across 1392px. */
 .table {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   border-collapse: collapse;
 }
 
@@ -55,6 +58,13 @@
 
 .nowrap {
   white-space: nowrap;
+}
+
+/* `Listed by` wraps rather than widening the table. */
+@media (min-width: 1024px) {
+  .agency {
+    width: 26ch;
+  }
 }
 
 .muted {

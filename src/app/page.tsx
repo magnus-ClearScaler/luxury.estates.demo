@@ -70,7 +70,7 @@ export default function Home() {
         <EstateCards {...h.estatesRow} />
       </section>
 
-      <div className={`${s.bandWrap} ends-on-band`}>
+      <div className={s.bandWrap}>
         <Band image={housePhoto(b)} eyebrow={b.eyebrow} title={b.title} body={b.body} link={b.link} />
       </div>
     </>

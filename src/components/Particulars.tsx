@@ -5,7 +5,8 @@ import styles from "./Particulars.module.css";
 /**
  * Brief 6.3.5. The linen band: h2, a `dl` in two columns on desktop (terms in
  * label style umber, values in small ink, a hairline between rows), null rows
- * already dropped by `particulars()`. Then `Features`, one item per line as
+ * already dropped by `particulars()`. On desktop the rows split ceil(n/2)
+ * and n - ceil(n/2), and only populated rows carry a rule. Then `Features`, one item per line as
  * written in data: no bullets, no commas joining them.
  */
 export function Particulars({ estate }: { estate: Estate }) {
@@ -20,7 +21,7 @@ export function Particulars({ estate }: { estate: Estate }) {
         </h2>
         <div className={styles.body}>
           <dl
-            className={`${styles.list} ${rows.length % 2 ? styles.odd : ""}`}
+            className={styles.list}
             style={{ "--rows": perColumn } as React.CSSProperties}
           >
             {rows.map((r, i) => (

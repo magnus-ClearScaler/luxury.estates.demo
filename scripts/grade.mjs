@@ -15,27 +15,67 @@
  *         public/grain.png                    256px monochrome noise tile
  *
  * Every image: rotate, fit inside 2400 x 2400 (2400px long edge, never
- * enlarged), then in this order modulate, linear, recomb, gamma, sharpen
- * ({ sigma: .4 }), JPEG q84 mozjpeg. Gamma is applied as sharp's output gamma
- * (`gamma(1, g)`: x ^ (1/g), lifts the mid tones); a plain `gamma(g)` would
- * cancel itself out around the resize.
+ * enlarged), then in this order modulate, linear, recomb, gamma, the cyan
+ * pass and the sky pass (round 2), sharpen ({ sigma: .4 }), JPEG q84
+ * mozjpeg. Gamma is an output gamma, x ^ (1/g), which lifts the mid tones.
+ * Round 2 applies it as a lookup table on raw pixels: sharp's `gamma(1, g)`
+ * only lifts when a sharpen follows in the same pipeline, and darkens (by
+ * about a fifth at 1.04) when the pixels are taken out raw for the new passes.
  *
- * FINAL PRESETS (tuned against docs/qa/grade-contact-sheet.jpg, round 1 2026-10-09)
+ * FINAL PRESETS (round 2, 2026-10-09; docs/qa/r2/sheet-*.jpg)
  *
- *   preset    modulate                    linear     recomb rows R / G / B                                gamma
- *   soft      sat .90 bri 1.02            .95, 8     none                                                 1.00
- *   standard  sat .62 bri 1.02 hue -2     .89, 18    [.97,.08,.04]  [.01,.98,.01]  [.05,.11,.78]          1.04
- *   garden    sat .52 bri 1.02 hue -2     .89, 18    [.97,.08,.04]  [.02,.94,.02]  [.05,.11,.78]          1.04
- *   strong    sat .50 bri 1.01 hue -4     .86, 22    [.95,.10,.05]  [.02,.96,.02]  [.07,.14,.70]          1.05
- *   warm      sat .55 bri 1.02            .90, 16    [.98,.06,.02]  [.01,.97,.01]  [.05,.11,.78]          1.04
+ *   preset    modulate                    linear     recomb rows R / G / B                                gamma  cyan
+ *   soft      sat .90 bri 1.02            .95, 8     none                                                 1.00   no
+ *   standard  sat .62 bri 1.02 hue -2     .89, 18    [.97,.08,.04]  [.01,.98,.01]  [.05,.11,.78]          1.04   yes
+ *   garden    sat .52 bri 1.02 hue -2     .89, 18    [.97,.08,.04]  [.02,.94,.02]  [.05,.11,.78]          1.04   yes
+ *   strong    sat .50 bri 1.01 hue -4     .86, 22    [.95,.10,.05]  [.02,.96,.02]  [.07,.14,.70]          1.05   yes
+ *   warm      sat .48 bri 1.02            .90, 16    [.98,.06,.02]  [.02,.94,.02]  [.05,.11,.78]          1.04   yes
+ *   interior  sat .70 bri 1.05            .95, 14    [.995,.035,0]  [.01,.98,.01]  [.02,.06,.90]          1.10   yes
+ *
+ * Round 2 changes:
+ * - interior (every interior frame): the standard / strong red rows sum to
+ *   1.09 / 1.10 and their blue rows to .94 / .91, so white walls went salmon
+ *   (R minus B about 31 on Les Pins 04). Rows near 1.0 and a gamma lift put
+ *   the brighter neutral tones (the 75th to 92nd percentile) at about
+ *   #E8E2DB to #EFE8E1 with R minus B between 7 and 14 on all sixteen
+ *   interiors; per-house red or blue rows in estates.ts even out the warmer
+ *   (Vignes, Mas Blanc, Bastide) and cooler (Collines) originals. The bosses
+ *   proposed .68 / .93,10 / gamma 1.02 (Opus) and .72 / .91,14 (Fable); both
+ *   left the walls near #BDB9B5, grey rather than cream, hence the lift.
+ * - warm: saturation .55 to .48 and the green row to .94, as `garden`.
+ * - cyan pass (`cyanPass`, all listing presets): pixels of hue 160 to 200
+ *   keep 15% of their saturation and are pulled to 150; feathered from 125
+ *   (the mint the recomb leaves in a pool) and to 215, with the hue pull
+ *   held inside 150 to 205 so a blue sky is only desaturated, never turned
+ *   cyan. Opus asked for 35%; at 35% and at 20% the Belvedere pools still
+ *   read mint. Belvedere 05 pool: #30ABB8 original, #9CA39E graded.
+ * - sky pass (`tune.sky`, every hero): below. Target SKY_TARGET #D8D4CB.
+ *
+ * Sky, mean RGB of the top 12% of each hero (mask weighted, so pine canopy
+ * and roofs count for little), after the colour grade and after the sky pass:
+ *   villa-cap-fleuri/01                185,187,192  ->  215,211,203
+ *   les-pins-eze/01                    150,156,155  ->  215,212,202
+ *   maison-edouard-beaulieu/02         170,175,179  ->  215,211,202
+ *   le-belvedere-nice/01               204,195,186  ->  214,211,203
+ *   villa-blanche-cap-dantibes/05      158,160,164  ->  199,196,191  (strength .75)
+ *   mas-blanc-mougins/01               188,174,156  ->  205,201,192
+ *   bastide-des-pres-chateauneuf/11    171,169,171  ->  213,209,200
+ *   domaine-des-vignes-saint-tropez/01 156,160,174  ->  215,211,202
+ *   maison-des-collines-ramatuelle/01  229,222,212  ->  216,212,203
+ *   les-pins-eze/11 (closing wide)     201,198,191  ->  216,212,203
+ * Villa Blanche runs at .75 so its cream facade, inside the mask, is not
+ * lifted with the sky; Mas Blanc's sky is mostly pine canopy, so its mask
+ * carries less weight.
  *
  * Per-image options live with the image in src/data (estates.ts, atmosphere.ts):
  *   extract  [left, top, width, height] as fractions of the source, cut before
  *            the resize (details that are whole rooms, a neighbour's house,
  *            a band of HDR cloud, the vault's rubble floor).
- *   tune     { hue, red, linear } replacing the preset's values for that image
- *            (the blue sky originals that went lilac take hue +3 and a red row
- *            of [.99,.06,.01]; the stone pine's white sky is held near chalk).
+ *   tune     { hue, saturation, brightness, red, green, blue, linear, sky,
+ *            cyan } replacing the preset's values for that image (the blue
+ *            sky originals that went lilac take hue +3 and a red row of
+ *            [.99,.06,.01]; the stone pine's white sky is held near chalk).
+ *   quality  JPEG quality for an atmosphere file (the sailboat is q88).
  * The film poster is graded `soft` with sharpen sigma .6 at q90 (round 1: the
  * q84 poster was soft and blocky at 1440).
  *
@@ -88,6 +128,7 @@ export const PRESETS = {
       [0.05, 0.11, 0.78],
     ],
     gamma: 1.04,
+    cyan: true,
   },
   strong: {
     modulate: { saturation: 0.5, brightness: 1.01, hue: -4 },
@@ -98,6 +139,7 @@ export const PRESETS = {
       [0.07, 0.14, 0.7],
     ],
     gamma: 1.05,
+    cyan: true,
   },
   garden: {
     modulate: { saturation: 0.52, brightness: 1.02, hue: -2 },
@@ -108,18 +150,34 @@ export const PRESETS = {
       [0.05, 0.11, 0.78],
     ],
     gamma: 1.04,
+    cyan: true,
   },
   warm: {
-    modulate: { saturation: 0.55, brightness: 1.02 },
+    modulate: { saturation: 0.48, brightness: 1.02 },
     linear: [0.9, 16],
     recomb: [
       [0.98, 0.06, 0.02],
-      [0.01, 0.97, 0.01],
+      [0.02, 0.94, 0.02],
       [0.05, 0.11, 0.78],
     ],
     gamma: 1.04,
+    cyan: true,
+  },
+  interior: {
+    modulate: { saturation: 0.7, brightness: 1.05 },
+    linear: [0.95, 14],
+    recomb: [
+      [0.995, 0.035, 0.0],
+      [0.01, 0.98, 0.01],
+      [0.02, 0.06, 0.9],
+    ],
+    gamma: 1.1,
+    cyan: true,
   },
 };
+
+/** The one sky every hero is pulled to (round 2): a warm grey, #D8D4CB. */
+export const SKY_TARGET = [0xd8, 0xd4, 0xcb];
 
 const LONG_EDGE = 2400;
 
@@ -134,11 +192,157 @@ function fromRaw({ data, info }) {
 
 /** Preset values with a per-image `tune` applied over them. */
 function tuned(p, tune = {}) {
-  const modulate = tune.hue != null ? { ...p.modulate, hue: tune.hue } : p.modulate;
+  const modulate = { ...p.modulate };
+  if (tune.hue != null) modulate.hue = tune.hue;
+  if (tune.saturation != null) modulate.saturation = tune.saturation;
+  if (tune.brightness != null) modulate.brightness = tune.brightness;
   const linear = tune.linear ?? p.linear;
   let recomb = p.recomb;
-  if (tune.red) recomb = [[...tune.red], ...(recomb ?? [[1, 0, 0], [0, 1, 0], [0, 0, 1]]).slice(1)];
-  return { ...p, modulate, linear, recomb };
+  if (tune.red || tune.green || tune.blue) {
+    const base = recomb ?? [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+    recomb = [tune.red ?? base[0], tune.green ?? base[1], tune.blue ?? base[2]].map((r) => [...r]);
+  }
+  const cyan = tune.cyan ?? p.cyan ?? false;
+  const sky = tune.sky === true ? 1 : typeof tune.sky === "number" ? tune.sky : 0;
+  return { ...p, modulate, linear, recomb, cyan, sky };
+}
+
+/** Output gamma, x ^ (1/g), in place. */
+function gammaPass({ data }, g) {
+  const lut = new Uint8Array(256);
+  for (let v = 0; v < 256; v++) lut[v] = Math.round(255 * Math.pow(v / 255, 1 / g));
+  for (let i = 0; i < data.length; i++) data[i] = lut[data[i]];
+}
+
+const smooth = (a, b, x) => {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
+  return t * t * (3 - 2 * t);
+};
+
+/**
+ * Hue-selective cyan pass (round 2, banned list: cyan pools). Pixels with a
+ * hue of 160 to 200 degrees and a saturation above about .10 keep 15% of
+ * their saturation and have their hue pulled to 150 (a grey green). Opus
+ * asked for 35%; at 35% and 20% the Belvedere pools still read mint on
+ * paper. The edges are feathered (125 to 140 degrees, which also takes the mint the
+ * recomb leaves in a pool, and 200 to 215 degrees; saturation .04 to
+ * .10, so pale aqua window skies are caught too) so no band appears where a pool meets its coping. Value is kept.
+ */
+function cyanPass({ data, info }) {
+  const n = info.width * info.height;
+  const c = info.channels;
+  for (let i = 0; i < n; i++) {
+    const o = i * c;
+    const r = data[o] / 255, g = data[o + 1] / 255, b = data[o + 2] / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const d = max - min;
+    if (max === 0 || d === 0) continue;
+    const s = d / max;
+    let h;
+    if (max === r) h = 60 * (((g - b) / d) % 6);
+    else if (max === g) h = 60 * ((b - r) / d + 2);
+    else h = 60 * ((r - g) / d + 4);
+    if (h < 0) h += 360;
+    const sat = smooth(0.04, 0.1, s);
+    const w = Math.min(smooth(125, 140, h), 1 - smooth(200, 215, h)) * sat;
+    if (w <= 0) continue;
+    // The hue pull stays inside 160 to 200 degrees, so a blue sky in the
+    // feathered edge is only desaturated, never turned towards cyan.
+    const pull = Math.min(smooth(150, 160, h), 1 - smooth(195, 205, h)) * sat;
+    const s2 = s * (1 - w * 0.85);
+    const h2 = h + pull * (150 - h);
+    // HSV back to RGB at the same value.
+    const v = max;
+    const C = v * s2;
+    const hp = h2 / 60;
+    const X = C * (1 - Math.abs((hp % 2) - 1));
+    let rr = 0, gg = 0, bb = 0;
+    if (hp < 1) [rr, gg, bb] = [C, X, 0];
+    else if (hp < 2) [rr, gg, bb] = [X, C, 0];
+    else if (hp < 3) [rr, gg, bb] = [0, C, X];
+    else if (hp < 4) [rr, gg, bb] = [0, X, C];
+    else if (hp < 5) [rr, gg, bb] = [X, 0, C];
+    else [rr, gg, bb] = [C, 0, X];
+    const m = v - C;
+    data[o] = Math.round((rr + m) * 255);
+    data[o + 1] = Math.round((gg + m) * 255);
+    data[o + 2] = Math.round((bb + m) * 255);
+  }
+}
+
+/** Sky mask weight at row y, luminance l (0..1): the upper frame, bright pixels only. */
+function skyWeight(y, h, l) {
+  return (1 - smooth(0.25, 0.5, y / h)) * smooth(0.42, 0.66, l);
+}
+
+/**
+ * Mean RGB of the top 12% of a raw image, weighted by the sky mask (pine
+ * canopy and roofs count for little). Exported for the QA sampler.
+ */
+export function skyMean({ data, info }) {
+  const c = info.channels;
+  const rows = Math.round(info.height * 0.12);
+  const sum = [0, 0, 0];
+  let wsum = 0;
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < info.width; x++) {
+      const o = (y * info.width + x) * c;
+      const l = (0.2126 * data[o] + 0.7152 * data[o + 1] + 0.0722 * data[o + 2]) / 255;
+      const w = skyWeight(y, info.height, l);
+      sum[0] += w * data[o];
+      sum[1] += w * data[o + 1];
+      sum[2] += w * data[o + 2];
+      wsum += w;
+    }
+  }
+  return wsum > 0 ? sum.map((v) => v / wsum) : null;
+}
+
+/**
+ * Graduated sky pass (round 2). Inside the sky mask the chroma is halved,
+ * then every masked pixel takes the offset that moves the top 12% mean onto
+ * SKY_TARGET, scaled by the mask and `strength`. Cloud texture is kept; the
+ * mask fades out between 25% and 50% of the height and on darker pixels, so
+ * the sea, the pines and the house below are untouched.
+ */
+function skyPass(img, strength) {
+  const { data, info } = img;
+  const c = info.channels;
+  const w = info.width, h = info.height;
+  const graded = skyMean(img);
+  const masks = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = y * w + x, o = i * c;
+      const l = (0.2126 * data[o] + 0.7152 * data[o + 1] + 0.0722 * data[o + 2]) / 255;
+      const m = skyWeight(y, h, l) * strength;
+      masks[i] = m;
+      if (m <= 0) continue;
+      const lum = l * 255;
+      const k = 1 - m * 0.5;
+      for (let ch = 0; ch < 3; ch++) data[o + ch] = Math.round(lum + (data[o + ch] - lum) * k);
+    }
+  }
+  const before = skyMean(img);
+  if (!before) return null;
+  // The measured mean is mask weighted, so a full offset on a part-weighted
+  // pixel would fall short: scale by sum(m) / sum(m^2) over the top 12%
+  // (capped at 2) so the mean lands on the target.
+  let s1 = 0, s2 = 0;
+  for (let i = 0; i < w * Math.round(h * 0.12); i++) {
+    const m = masks[i] / (strength || 1);
+    s1 += m;
+    s2 += m * m;
+  }
+  const k = s2 > 0 ? Math.min(2, s1 / s2) : 1;
+  const off = SKY_TARGET.map((t, ch) => (t - before[ch]) * k);
+  for (let i = 0; i < w * h; i++) {
+    const m = masks[i];
+    if (m <= 0) continue;
+    const o = i * c;
+    for (let ch = 0; ch < 3; ch++) data[o + ch] = Math.max(0, Math.min(255, Math.round(data[o + ch] + off[ch] * m)));
+  }
+  return { before: graded, after: skyMean(img) };
 }
 
 /** An oriented sharp pipeline, cut to `extract` (fractions of the source) when given. */
@@ -179,14 +383,26 @@ export async function gradeFile(input, out, presetName, opts = {}) {
   );
   // Pass 2: linear on its own (sharp would otherwise run it last).
   img = await raw(fromRaw(img).linear(p.linear[0], p.linear[1]));
-  // Pass 3: recomb, output gamma, sharpen.
+  // Pass 3: recomb.
   let last = fromRaw(img);
   if (p.recomb) last = last.recomb(p.recomb);
-  if (p.gamma > 1) last = last.gamma(1, p.gamma);
+  // Pass 4: output gamma as a lookup table on raw pixels (x ^ (1/g), the
+  // same lift sharp's `gamma(1, g)` gives when a sharpen follows it; without
+  // one, sharp darkens instead, so it is no longer left to sharp), then the
+  // round 2 cyan pass and sky pass.
+  let sky = null;
+  if (p.gamma !== 1 || p.cyan || p.sky > 0) {
+    img = await raw(last);
+    if (p.gamma !== 1) gammaPass(img, p.gamma);
+    if (p.cyan) cyanPass(img);
+    if (p.sky > 0) sky = skyPass(img, p.sky);
+    last = fromRaw(img);
+  }
   last = last.sharpen({ sigma: opts.sharpen ?? 0.4 });
 
   mkdirSync(dirname(out), { recursive: true });
   await last.jpeg({ quality: opts.quality ?? 84, mozjpeg: true }).toFile(out);
+  return { sky };
 }
 
 function jobs() {
@@ -209,7 +425,7 @@ function jobs() {
       input: join(ORIG, "atmosphere", `${a.name}.jpg`),
       out: join(PUB, "atmosphere", `${a.name}.jpg`),
       preset: a.grade,
-      opts: { extract: a.extract, tune: a.tune },
+      opts: { extract: a.extract, tune: a.tune, quality: a.quality },
     });
   }
   return list;
@@ -265,8 +481,10 @@ async function main() {
   }
 
   let bytes = 0;
+  const rgb = (v) => v.map((x) => Math.round(x)).join(",");
   for (const j of list) {
-    await gradeFile(j.input, j.out, j.preset, j.opts);
+    const { sky } = await gradeFile(j.input, j.out, j.preset, j.opts);
+    if (sky) console.log(`sky ${j.out.slice(PUB.length + 1)}  top 12% ${rgb(sky.before)} -> ${rgb(sky.after)}`);
     bytes += statSync(j.out).size;
   }
   if (!only || only.has("poster")) await poster();

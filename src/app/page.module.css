@@ -36,9 +36,8 @@
   }
 }
 
-/* The linen band runs straight into the linen footer (no strip of paper
-   between them); the footer opens with a hairline (globals .footer-rule). */
+/* Round 2: the band ends on paper before the linen footer, as every other
+   page does, so it reads as the page's one deeper band. */
 .bandWrap {
-  margin-top: var(--section);
-  margin-bottom: 0;
+  margin-block: var(--section);
 }
