@@ -8,10 +8,10 @@ import { film } from "@/data/atmosphere";
  * The home hero film (brief 6.1.1 and 9), ported from
  * ~/get-work-abroad/components/home/HeroVideo.tsx.
  *
- * Layout is built in: desktop inset at the gutter, about 72vh tall (never
- * more than the screen less 300px), 32px below the header, framed at 50/35
+ * Layout is built in: desktop inset at the gutter, about 44vh tall (340 to
+ * 420px; owner round 2, fix pass 2), 32px below the header, framed at 50/35
  * (round 3: the 2560 x 1440 aerial `sea-pale-horizon`, horizon at about two
- * fifths of the box); mobile edge to edge directly below the header, 4:5,
+ * fifths of the box); mobile edge to edge directly below the header, 1:1,
  * framed at 50/60.
  * Nothing is written on it.
  *

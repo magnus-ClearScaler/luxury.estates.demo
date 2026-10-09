@@ -244,11 +244,20 @@ const smooth = (a, b, x) => {
  * recomb leaves in a pool, and 200 to 215 degrees; saturation .04 to
  * .10, so pale aqua window skies are caught too) so no band appears where a pool meets its coping. Value is kept.
  */
-function cyanPass({ data, info }) {
+function cyanPass({ data, info }, pool = null) {
   const n = info.width * info.height;
   const c = info.channels;
+  // Owner round 2, fix pass 2 (`tune.pool`): inside this box (fractions of
+  // the graded frame) the band reaches on to 240 degrees and keeps 10% of
+  // the saturation, so a deep blue pool turns grey green without a global
+  // saturation cut that would grey the pines and the stone as well.
+  const box = pool
+    ? [pool[0] * info.width, pool[1] * info.height, (pool[0] + pool[2]) * info.width, (pool[1] + pool[3]) * info.height]
+    : null;
   for (let i = 0; i < n; i++) {
     const o = i * c;
+    const px = i % info.width, py = (i - px) / info.width;
+    const inPool = box && px >= box[0] && px < box[2] && py >= box[1] && py < box[3];
     const r = data[o] / 255, g = data[o + 1] / 255, b = data[o + 2] / 255;
     const max = Math.max(r, g, b), min = Math.min(r, g, b);
     const d = max - min;
@@ -260,15 +269,17 @@ function cyanPass({ data, info }) {
     else h = 60 * ((r - g) / d + 4);
     if (h < 0) h += 360;
     const sat = smooth(0.04, 0.1, s);
-    const w = Math.min(smooth(125, 140, h), 1 - smooth(200, 215, h)) * sat;
+    const hiA = inPool ? 230 : 200, hiB = inPool ? 245 : 215;
+    const w = Math.min(smooth(125, 140, h), 1 - smooth(hiA, hiB, h)) * sat;
     if (w <= 0) continue;
     // The hue pull stays inside 160 to 200 degrees, so a blue sky in the
     // feathered edge is only desaturated, never turned towards cyan.
-    const pull = Math.min(smooth(150, 160, h), 1 - smooth(195, 205, h)) * sat;
-    const s2 = s * (1 - w * 0.85);
+    const pull = Math.min(smooth(150, 160, h), 1 - smooth(inPool ? 225 : 195, inPool ? 235 : 205, h)) * sat;
+    const s2 = s * (1 - w * (inPool ? 0.9 : 0.85));
     const h2 = h + pull * (150 - h);
-    // HSV back to RGB at the same value.
-    const v = max;
+    // HSV back to RGB at the same value (inside a `pool` box, lifted a
+    // little towards white, so a dark pool reads as water, not a black slab).
+    const v = inPool ? max + (1 - max) * 0.18 * w : max;
     const C = v * s2;
     const hp = h2 / 60;
     const X = C * (1 - Math.abs((hp % 2) - 1));
@@ -505,7 +516,7 @@ export async function gradeFile(input, out, presetName, opts = {}) {
   if (p.gamma !== 1 || p.cyan || p.sky > 0 || p.pink > 0) {
     img = await raw(last);
     if (p.gamma !== 1) gammaPass(img, p.gamma);
-    if (p.cyan) cyanPass(img);
+    if (p.cyan) cyanPass(img, opts.tune?.pool ?? null);
     if (p.pink > 0) pinkPass(img, p.pink);
     if (p.sky > 0) sky = skyPass(img, p.sky, opts.tune?.skyLum);
     last = fromRaw(img);
@@ -628,6 +639,11 @@ async function main() {
   }
   if (!only || only.has("poster")) await poster();
   if (!only) await grain();
+  // Owner round 2, fix pass 2: the dev server's image optimiser keys its
+  // cache by url, width, quality and format and never looks at the file's
+  // mtime, so a regraded frame kept being served in its old grade. Clear it
+  // after every run so QA captures always show the files just written.
+  rmSync(join(ROOT, ".next/dev/cache/images"), { recursive: true, force: true });
   console.log(`graded ${list.length} images, ${(bytes / 1e6).toFixed(1)} MB`);
 }
 

@@ -19,6 +19,13 @@ export type FeatureItem = {
  */
 const PAIR_RATIO = { wide: "1.6065 / 1", portrait: "0.7705 / 1" } as const;
 
+/**
+ * Owner round 2, fix pass 2: on phones the wide feature (Mas Blanc, the best
+ * photograph on the site) was the smallest image on Home at 1.62. It stacks
+ * at 5:4 instead; the portrait keeps 0.76.
+ */
+const MOBILE_RATIO = { wide: "5 / 4", portrait: undefined } as const;
+
 export function FeaturePair({ wide, portrait }: { wide: FeatureItem; portrait: FeatureItem }) {
   return (
     <div className={s.pair}>
@@ -47,7 +54,12 @@ function Card({
         mobileRatio={kind}
         sizes={sizes}
         className={s.desktopRatio}
-        style={{ "--ratio-desktop": PAIR_RATIO[kind] } as React.CSSProperties}
+        style={
+          {
+            "--ratio-desktop": PAIR_RATIO[kind],
+            ...(MOBILE_RATIO[kind] ? { "--ratio-mobile": MOBILE_RATIO[kind] } : {}),
+          } as React.CSSProperties
+        }
       />
       <p className={`t-eyebrow c-taupe ${s.eyebrow}`}>{item.eyebrow}</p>
       <h3 className={`t-h3 ${s.title}`}>{item.title}</h3>

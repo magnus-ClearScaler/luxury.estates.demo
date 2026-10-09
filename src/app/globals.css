@@ -485,7 +485,7 @@ select.input option {
 }
 
 /* ---------- Hero film (brief 6.1.1) ---------- */
-/* Mobile: edge to edge, 4:5, directly below the header. */
+/* Mobile: edge to edge, square, directly below the header. */
 .hero-film-wrap {
   width: 100%;
 }
@@ -493,7 +493,9 @@ select.input option {
   position: relative;
   overflow: hidden;
   background: var(--sand);
-  aspect-ratio: 4 / 5;
+  /* Owner round 2, fix pass 2: square on phones (was 4:5), so Mas Blanc
+     starts within the first screen and a half. */
+  aspect-ratio: 1 / 1;
 }
 .hero-film-media {
   position: absolute;
@@ -510,7 +512,7 @@ select.input option {
 .hero-film-video[data-playing="true"] {
   opacity: 1;
 }
-/* Desktop: inset at the gutter, about 72vh tall (owner round 1: no longer a
+/* Desktop: inset at the gutter (owner round 1: no longer a
    full 16:9). Round 3: 32px below the header (was 65px) and never taller
    than the screen less 300px, so the intro eyebrow and h2 land in the first
    screen (at 1440 x 900 the film runs 120 to 720, the h2 starts near 850).
@@ -522,10 +524,15 @@ select.input option {
     padding-inline: var(--gutter);
     padding-top: 32px;
   }
+  /* Owner round 2, fix pass 2 ("the best houses are not on the first
+     page"): about 44vh, never more than 420px (was about 600 at 1440 x 900),
+     so the top of the Mas Blanc feature shows in the first screen. At the
+     boss's 52vh / 480px the feature still began about 20px below the fold
+     at 1440 x 900; section spacing is unchanged. */
   .hero-film {
     aspect-ratio: auto;
     width: 100%;
-    height: clamp(520px, min(72vh, calc(100svh - 300px)), 760px);
+    height: clamp(340px, 44vh, 420px);
   }
   /* Round 3: the film is the 2560 x 1440 aerial over a still sea; the box is
      about 2.3:1, and 50/35 sets the horizon at about two fifths of its

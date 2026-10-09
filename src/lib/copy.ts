@@ -103,16 +103,21 @@ const raw = {
     statementImage: {
       estate: "bastide-des-oliviers-vence",
       file: "01",
-      focal: [50, 35] as const,
+      // Fix pass 2: the house sits in the right half, so the crop follows
+      // the hero's x of 65.
+      focal: [65, 40] as const,
     },
     estatesRow: {
       eyebrow: "ESTATES",
       cards: [
-        { slug: "les-arcades-ramatuelle", file: "02", focal: [50, 50] as const, name: "Les Arcades", town: "RAMATUELLE" },
+        // Fix pass 2: at 50 the left edge cut a neighbouring pavilion in the
+        // middle of its arch; at 64 the card starts on the ivy and the hedge
+        // and ends on the cypress.
+        { slug: "les-arcades-ramatuelle", file: "02", focal: [64, 50] as const, name: "Les Arcades", town: "RAMATUELLE" },
         // Fix pass: 02 (the colonnade, the iron balconies and the pool), not 03,
         // where a palm hid the porch and the drone looked down.
-        { slug: "villa-blanche-cap-dantibes", file: "02", focal: [52, 50] as const, name: "Villa Blanche", town: "CAP D'ANTIBES" },
-        { slug: "bastide-du-ciel-gassin", file: "02", focal: [72, 50] as const, name: "Bastide du Ciel", town: "GASSIN" },
+        { slug: "villa-blanche-cap-dantibes", file: "02", focal: [55, 50] as const, name: "Villa Blanche", town: "CAP D'ANTIBES" },
+        { slug: "bastide-du-ciel-gassin", file: "02", focal: [72, 44] as const, name: "Bastide du Ciel", town: "GASSIN" },
       ],
       link: { label: "ALL THE HOUSES", href: "/estates" },
     },

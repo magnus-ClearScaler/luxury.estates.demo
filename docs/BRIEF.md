@@ -268,6 +268,24 @@ Galleries now run, where they changed (hero first):
 - Le Mas Rose: 01, 03 + 07, 04, 05, 06.
 - Maison Edouard: 02 takes saturation .42. Hero 01 unchanged: no extract makes the neighbour a sliver and keeps the right wing; first to cut, as R2.1 says.
 
+### R2.6.2 Fix pass 2 (bosses' review of v2r1)
+
+Binding over R2.4, R2.5 and R2.6.1 where they conflict.
+
+- QA: `scripts/grade.mjs` now clears `.next/dev/cache/images` after every run. The dev image optimiser keys by url, width, quality and format and never revalidates on mtime, so the v2r1 captures showed ten frames in an old grade.
+- Home: the film is `clamp(360px, 52vh, 480px)` tall on desktop (was about 600 at 1440 x 900) and square on phones (was 4:5). The Mas Blanc feature stacks at 5:4 on phones (was 1.62). Section spacing is unchanged.
+- Home focals: statement Oliviers 01 at 65/40; Les Arcades 02 at 64/50 (the crop starts on the ivy and hedge, not on the neighbouring pavilion's arch; the cypress is the right edge); Villa Blanche 02 at 55/50; Bastide du Ciel 02 at 72/44.
+- Grade: a local pool pass (`tune.pool`, a box where the cyan pass reaches deep blue, keeps 10% saturation and lifts the value a little) replaces the global saturation cuts. Villa Blanche 02 and 03 run on `standard` with cooler red and blue rows and the pool pass (no saturation .32). Bastide du Ciel runs on `standard` with CIEL at saturation .58, linear .95/6 and red `[.96, .07, .03]`, matched to Le Mas Rose 01. Oliviers 01 takes sharpen 0 and cooler rows. Villa Camille 02 takes a lower red row, no hue shift, brightness .97 and the sky pass at .9.
+- Galleries (hero first):
+  - Bastide des Oliviers: 01, 02, 03 + 05, 08 (07, the top down drone, dropped; 08 at 65/45).
+  - Villa Blanche: 02, 03 + 10, 01, 07, 04 (05 dropped: the colonnade again). Hero 02 `extract: [0.16, 0.14, 0.75, 0.78]`, focal 50/60: the pool and the pines stay, the thatched bar goes, a small piece of the frond remains at top right because the porch's last column sits at .904.
+  - Villa Camille: 02, 07 + 03, 04, 01. The detail is now the villa (04, cut to the house, its tower and terrace; a parked car behind the tower roof is cloned out), not the bay (08).
+  - Maison du Chemin: 06, 04 + 07, 08, 02 (05 dropped: darker grade and a garden hose; 08 at 28/50).
+  - Bastide du Ciel: 02, 03, 04 + 05, 01, 09 (06 dropped). Hero `extract: [0, 0.1, 1, 0.84]`, focal 55/50 (the mottled band at the top of the drone sky goes).
+  - Domaine des Vignes: hero `extract: [0, 0, 1, 0.9]`, focal 50/30, pool pass.
+  - Maison Édouard stays published and last, and is never on Home. The tight hero is replaced by the honest frame of the whole villa: `extract: [0.2, 0.22, 0.8, 0.66]`, focal 35/50 (the winter garden, garden and pool, the neighbour's lower floors behind). 08 (the corner of the villa and the winter garden over the pool) is added second, for the owner's "not enough photos of the house"; the view (02) closes the page: 01, 08, 07 + 12, 04, 11, 02. Still the first cut if the owner wants ten.
+- QA in `docs/qa/v2r2/`: `sheet-heroes.jpg`, `sheet-home.jpg`, `sheet-ciel.jpg`, and every route at 1440 full, 1440 fold and 390 full.
+
 ### R2.7 Checks before calling it done
 
 1. Home at 1440 and 390: seven stills, seven houses, every one a house exterior; no atmosphere photograph anywhere on Home; the OG image shows Mas Blanc.
