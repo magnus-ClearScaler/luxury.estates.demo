@@ -45,7 +45,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="container-x section">
+      <section className={`container-x section ${s.afterIntro}`}>
         <FeaturePair
           wide={{ image: housePhoto(w), eyebrow: w.eyebrow, title: w.title, body: w.body, link: w.link }}
           portrait={{ image: housePhoto(p), eyebrow: p.eyebrow, title: p.title, body: p.body, link: p.link }}

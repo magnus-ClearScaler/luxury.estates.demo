@@ -7,14 +7,20 @@ import styles from "./estates.module.css";
 
 export const metadata: Metadata = { title: copy.estates.title };
 
-/** Keeps `Saint-Tropez` on one line so the heading never breaks at its hyphen. */
+/**
+ * Keeps `Saint-Tropez peninsula` on one line, so the heading never breaks at
+ * the hyphen, and ties a `the` before it to the word in front with a no-break
+ * space, so the balanced rag reads `Eleven houses between / Roquebrune and
+ * the / Saint-Tropez peninsula.` (fix pass 3: the balancer pushed `the` down
+ * and stranded `Roquebrune and`).
+ */
 function keepPlaceNames(text: string) {
-  const name = typo("Saint-Tropez");
+  const name = typo("Saint-Tropez peninsula");
   const at = text.indexOf(name);
   if (at < 0) return text;
   return (
     <>
-      {text.slice(0, at)}
+      {text.slice(0, at).replace(/ the $/, "\u00a0the ")}
       <span className={styles.nowrap}>{name}</span>
       {text.slice(at + name.length)}
     </>

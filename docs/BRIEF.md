@@ -286,6 +286,28 @@ Binding over R2.4, R2.5 and R2.6.1 where they conflict.
   - Maison Édouard stays published and last, and is never on Home. The tight hero is replaced by the honest frame of the whole villa: `extract: [0.2, 0.22, 0.8, 0.66]`, focal 35/50 (the winter garden, garden and pool, the neighbour's lower floors behind). 08 (the corner of the villa and the winter garden over the pool) is added second, for the owner's "not enough photos of the house"; the view (02) closes the page: 01, 08, 07 + 12, 04, 11, 02. Still the first cut if the owner wants ten.
 - QA in `docs/qa/v2r2/`: `sheet-heroes.jpg`, `sheet-home.jpg`, `sheet-ciel.jpg`, and every route at 1440 full, 1440 fold and 390 full.
 
+### R2.6.3 Fix pass 3 (bosses' review of v2r2)
+
+Binding over R2.4, R2.5, R2.6.1 and R2.6.2 where they conflict.
+
+- Home fold: the film is unchanged (`clamp(340px, 44vh, 420px)` on desktop, square on phones; R2.6.2's 52vh / 480px was never shipped). On desktop the intro sits 48px below the film (was 96), its link 24px below the title (was 40), and one 56px gap leads to the feature pair (was the shared section margin, about 100). At 1440 x 900 Mas Blanc starts at y 744, so 156px of it (roofline and cypresses) is in the first screen; at 1280 x 800 it starts at 700; at 390 x 844 at 726. The boss's 64 / 24 / 64 left 132px at 1440 x 900.
+- Grade (`scripts/grade.mjs`), three per-frame options: `white` (a highlight roll-off whose white point is the paper, #F6F2EB, so a white facade keeps its modelling instead of clipping), `poolLift` / `poolTint` (inside the `pool` box, a darker and faintly grey green water for a pale, milky pool) and `skyBlue` (a sky picked by hue, not by brightness and height, for a deep blue sky beside a white facade).
+- Home focals: Villa Blanche 02 at 42/50 (the pines at left in the card); Bastide du Ciel 02 at 72/36 (the garden chairs and lounger out).
+- Galleries (hero first):
+  - Mas Blanc: 01, 02, 07 + 05, 03 (04, the 499px beams detail, dropped). 01 takes `white: .8`.
+  - Bastide des Oliviers: 01, 03 + 05, 02, so the page ends on the house (08, the salon with the wrapped pot, magazines, switch and lamp, dropped). Four frames, under R2.7's five: the listing's full set online (twenty frames) has no other exterior of the house, and none of its rooms is calm enough.
+  - Les Arcades: unchanged, 02, 03, 07 + 08, 06, 01, as R2.6.1 says (ground, the house among the pines from above, the pair, the pine detail, the house with the sea). Fable's v2r2 note read the numbers of 03 and 01 the other way round; the rendered order and the data agree with this line.
+  - Villa Blanche: 02, 03 + 10, 01, 07, 04. Hero 02 `extract: [0.16, 0.14, 0.72, 0.78]` with the palm frond cloned out of the sky from the left (one patch); a faint frond tip remains low at the right edge, over the pine. 02 and 03 at red `[.93, .06, .03]`, `white: .72`, `poolLift: -.1`, `poolTint: .08`; 02 at brightness .95 and sky .9, 03 at .98.
+  - Villa Camille: 02, 07 + 11, 08, 03. 11 is new, from the listing's full set online: the carved corner and bay of the villa above the terrace, `extract: [0, 0.02, 0.62, 0.64]` (above the wicker chairs; most of the sky out), `skyBlue: 1`. 08 (the bay) is back as the detail at `extract: [0, 0.12, 0.51, 0.88]` (893px wide). 03 is now a wide, `extract: [0.1, 0, 0.9, 0.72]` (ladders, diving board and near loungers out), and closes the page on the house. 04 (560px, a whole house in the smallest slot) and 01 are dropped: in 01 the palm frond crosses the carved central gable, which no clone rebuilds (tried: the gable smeared and strands remained), and the crop below it took the roof. Hero 02: red `[.99, .06, .02]`, sky at full on `skyLum [.24, .46]`, `pink: .5`, `white: .78`, `skyBlue: .7`; its top 12% now measures 214,210,202 against the target 216,212,203.
+  - Maison du Chemin: 06, 04 + 07, 01, 02. 08 (ultra wide stair, orange chair) dropped; 01 (the corner of the house and its loggia under the vine, `extract: [0.07, 0.02, 0.63, 0.72]`, parasols, pool and sprinkler out) comes in. Hero 06 takes `skyBlue: .8` and `white: .8`.
+  - Bastide du Ciel: 02, 03, 01, 04 + 05, 09 (the two drones apart).
+  - Le Mas Rose: 01, 03 + 07, 04, 10, 06. Hero `extract: [0.12, 0.16, 0.8, 0.72]`, focal 60/50: the lawn in front and the sides go, so the house is about a quarter larger than before at 1.62 and at 4:5; it stays eighth. 05 (pool and loungers) is replaced by 10, new from the listing's full set online: the hipped roof and the sage shutters, `extract: [0, 0.06, 1, 0.52]`.
+  - Domaine des Vignes: 06 `extract: [0.18, 0, 0.54, 1]`, focal 50/50 (1037px; was 760).
+  - Maison Edouard: 01, 08, 07 + 12, 11, 02 (04, the near blank window, dropped).
+- /estates intro: `Saint-Tropez peninsula` is held on one line and `the` is tied to `and`, so the rag is `Eleven houses between / Roquebrune and the / Saint-Tropez peninsula.` at every width.
+- New source files: `assets/originals/listings/villa-camille-roquebrune/11.jpg` (Sotheby's CA8-526, photo 3 of 20) and `le-mas-rose-ramatuelle/10.jpg` (Sotheby's CA9-1070, photo 18 of 20), both added to the listing's `photos` in data.
+- QA in `docs/qa/v2r3/` (every route at 1440 full, 1440 first screen, 390 full; `sheet-heroes.jpg`, `sheet-home.jpg`) and `docs/qa/r4/` (Home, /estates, Villa Blanche, Villa Camille, Bastide du Ciel, Maison Edouard at 1440 and 390, with the two sheets).
+
 ### R2.7 Checks before calling it done
 
 1. Home at 1440 and 390: seven stills, seven houses, every one a house exterior; no atmosphere photograph anywhere on Home; the OG image shows Mas Blanc.

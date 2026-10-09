@@ -244,8 +244,15 @@ const smooth = (a, b, x) => {
  * recomb leaves in a pool, and 200 to 215 degrees; saturation .04 to
  * .10, so pale aqua window skies are caught too) so no band appears where a pool meets its coping. Value is kept.
  */
-function cyanPass({ data, info }, pool = null) {
+function cyanPass({ data, info }, pool = null, tone = {}) {
   const n = info.width * info.height;
+  // Fix pass 3 (`tune.poolLift`, `tune.poolTint`): a pale, milky pool (Villa
+  // Blanche 02 and 03) sits below the usual saturation floor and was lifted
+  // further towards white. Inside the box the floor is lower, the lift can be
+  // negative (a darker, denser water), and the water keeps a faint grey
+  // green tint rather than going to ice.
+  const lift = tone.lift ?? 0.18;
+  const tint = tone.tint ?? 0;
   const c = info.channels;
   // Owner round 2, fix pass 2 (`tune.pool`): inside this box (fractions of
   // the graded frame) the band reaches on to 240 degrees and keeps 10% of
@@ -268,18 +275,19 @@ function cyanPass({ data, info }, pool = null) {
     else if (max === g) h = 60 * ((b - r) / d + 2);
     else h = 60 * ((r - g) / d + 4);
     if (h < 0) h += 360;
-    const sat = smooth(0.04, 0.1, s);
+    const sat = inPool && (tint > 0 || lift < 0.18) ? smooth(0.012, 0.05, s) : smooth(0.04, 0.1, s);
     const hiA = inPool ? 230 : 200, hiB = inPool ? 245 : 215;
     const w = Math.min(smooth(125, 140, h), 1 - smooth(hiA, hiB, h)) * sat;
     if (w <= 0) continue;
     // The hue pull stays inside 160 to 200 degrees, so a blue sky in the
     // feathered edge is only desaturated, never turned towards cyan.
     const pull = Math.min(smooth(150, 160, h), 1 - smooth(inPool ? 225 : 195, inPool ? 235 : 205, h)) * sat;
-    const s2 = s * (1 - w * (inPool ? 0.9 : 0.85));
+    let s2 = s * (1 - w * (inPool ? 0.9 : 0.85));
+    if (inPool && tint > 0) s2 = Math.max(s2, tint * w);
     const h2 = h + pull * (150 - h);
     // HSV back to RGB at the same value (inside a `pool` box, lifted a
     // little towards white, so a dark pool reads as water, not a black slab).
-    const v = inPool ? max + (1 - max) * 0.18 * w : max;
+    const v = !inPool ? max : lift >= 0 ? max + (1 - max) * lift * w : max * (1 + lift * w);
     const C = v * s2;
     const hp = h2 / 60;
     const X = C * (1 - Math.abs((hp % 2) - 1));
@@ -294,6 +302,90 @@ function cyanPass({ data, info }, pool = null) {
     data[o] = Math.round((rr + m) * 255);
     data[o + 1] = Math.round((gg + m) * 255);
     data[o + 2] = Math.round((bb + m) * 255);
+  }
+}
+
+/**
+ * Fix pass 3 blue sky pass (`tune.skyBlue`, strength 0 to 1). The graduated
+ * sky pass works on bright pixels in the upper half; a deep blue sky that
+ * grades to slate and runs far down the frame beside a white facade (Villa
+ * Camille 11) falls outside it, while the facade falls inside. This pass
+ * picks the sky by hue instead (blue, 185 to 255 degrees, saturation above
+ * about .06; clouds and stone are left alone) and centres it on SKY_TARGET,
+ * keeping a third of its own light and dark texture around its mean.
+ */
+async function skyBluePass({ data, info }, strength) {
+  const c = info.channels, n = info.width * info.height;
+  const mask = new Float32Array(n);
+  let sw = 0, sl = 0;
+  for (let i = 0; i < n; i++) {
+    const o = i * c;
+    const r = data[o] / 255, g = data[o + 1] / 255, b = data[o + 2] / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    if (max === 0 || d === 0 || max !== b) continue;
+    const s = d / max;
+    const h = 60 * ((r - g) / d + 4);
+    const w = Math.min(smooth(180, 195, h), 1 - smooth(245, 260, h)) * smooth(0.03, 0.08, s);
+    if (w <= 0) continue;
+    mask[i] = w;
+    sw += w;
+    sl += w * (0.2126 * data[o] + 0.7152 * data[o + 1] + 0.0722 * data[o + 2]);
+  }
+  if (sw === 0) return;
+  const mean = sl / sw;
+  // The mask is blurred, so cloud edges and JPEG noise do not leave the sky
+  // blotched where the hue test flickers from pixel to pixel.
+  const m8 = Buffer.alloc(n);
+  for (let i = 0; i < n; i++) m8[i] = Math.round(mask[i] * 255);
+  const soft = await sharp(m8, { raw: { width: info.width, height: info.height, channels: 1 } })
+    .blur(Math.max(2, info.width / 300))
+    .raw()
+    .toBuffer();
+  for (let i = 0; i < n; i++) {
+    const w = Math.min(1, (soft[i] / 255) * 1.4) * strength;
+    if (w <= 0) continue;
+    const o = i * c;
+    const l = 0.2126 * data[o] + 0.7152 * data[o + 1] + 0.0722 * data[o + 2];
+    for (let ch = 0; ch < 3; ch++) {
+      const t = SKY_TARGET[ch] + (l - mean) * 0.3;
+      data[o + ch] = Math.max(0, Math.min(255, Math.round(data[o + ch] * (1 - w) + t * w)));
+    }
+  }
+}
+
+/** The site's paper, #F6F2EB: the white point of the highlight roll-off. */
+const PAPER_RGB = [0xf6, 0xf2, 0xeb];
+
+/**
+ * Fix pass 3 highlight roll-off (`tune.white`, the knee as a fraction of
+ * 255, e.g. .72). Above the knee each channel follows an exponential
+ * shoulder that leaves the knee at slope 1 and lands pure white on the
+ * paper tone, so a white stone facade (Villa Blanche 02) keeps its
+ * modelling and sits near #F6F2EB instead of clipping to 255.
+ */
+function whitePass({ data, info }, knee) {
+  const k = knee * 255;
+  const luts = PAPER_RGB.map((P) => {
+    const r = (P - k) / (255 - k);
+    // Solve a / (1 - e^-a) = 1 / r for a > 0 (slope 1 at the knee).
+    let lo = 1e-6, hi = 50;
+    for (let i = 0; i < 60; i++) {
+      const a = (lo + hi) / 2;
+      if (a / (1 - Math.exp(-a)) < 1 / r) lo = a;
+      else hi = a;
+    }
+    const a = (lo + hi) / 2;
+    const lut = new Uint8Array(256);
+    for (let v = 0; v < 256; v++) {
+      if (v <= k) lut[v] = v;
+      else lut[v] = Math.round(k + (P - k) * (1 - Math.exp((-a * (v - k)) / (255 - k))) / (1 - Math.exp(-a)));
+    }
+    return lut;
+  });
+  for (let i = 0; i < data.length; i += info.channels) {
+    data[i] = luts[0][data[i]];
+    data[i + 1] = luts[1][data[i + 1]];
+    data[i + 2] = luts[2][data[i + 2]];
   }
 }
 
@@ -513,12 +605,14 @@ export async function gradeFile(input, out, presetName, opts = {}) {
   // one, sharp darkens instead, so it is no longer left to sharp), then the
   // round 2 cyan pass and sky pass.
   let sky = null;
-  if (p.gamma !== 1 || p.cyan || p.sky > 0 || p.pink > 0) {
+  if (p.gamma !== 1 || p.cyan || p.sky > 0 || p.pink > 0 || opts.tune?.white || opts.tune?.skyBlue) {
     img = await raw(last);
     if (p.gamma !== 1) gammaPass(img, p.gamma);
-    if (p.cyan) cyanPass(img, opts.tune?.pool ?? null);
+    if (p.cyan) cyanPass(img, opts.tune?.pool ?? null, { lift: opts.tune?.poolLift, tint: opts.tune?.poolTint });
     if (p.pink > 0) pinkPass(img, p.pink);
     if (p.sky > 0) sky = skyPass(img, p.sky, opts.tune?.skyLum);
+    if (opts.tune?.skyBlue) await skyBluePass(img, opts.tune.skyBlue);
+    if (opts.tune?.white) whitePass(img, opts.tune.white);
     last = fromRaw(img);
   }
   // Round 3: `tune.sharpen` 0 leaves an image unsharpened (the Bastide

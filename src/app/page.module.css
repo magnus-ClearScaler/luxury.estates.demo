@@ -1,14 +1,22 @@
 /* Home (brief 6.1). Only what the shared classes do not cover. */
 
-/* Under the hero: left aligned, 640px; 64px below the film on mobile, 96px
-   on desktop (owner round 1). */
+/* Under the hero: left aligned, 640px, 64px below the film on mobile.
+   Owner round 2, fix pass 3: on desktop the intro is tightened (48px below
+   the film, was 96; one 56px gap to the feature pair, was the shared section
+   margin of about 100) so at least 150px of Mas Blanc, its roofline and
+   cypresses, shows in the first screen at 1440 x 900. The film is unchanged.
+   The boss's 64 / 64 left 132px. */
 .intro {
   margin-top: 64px;
   margin-bottom: var(--section);
 }
 @media (min-width: 768px) {
   .intro {
-    margin-top: 96px;
+    margin-top: 48px;
+    margin-bottom: 56px;
+  }
+  .intro + .afterIntro {
+    margin-top: 56px;
   }
 }
 .introInner {
@@ -18,7 +26,7 @@
   margin-top: 20px;
 }
 .introLink {
-  margin-top: 40px;
+  margin-top: 24px;
 }
 
 /* Statement, centred, 680px, then the 21:9 inset. */

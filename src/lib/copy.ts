@@ -115,9 +115,13 @@ const raw = {
         // and ends on the cypress.
         { slug: "les-arcades-ramatuelle", file: "02", focal: [64, 50] as const, name: "Les Arcades", town: "RAMATUELLE" },
         // Fix pass: 02 (the colonnade, the iron balconies and the pool), not 03,
-        // where a palm hid the porch and the drone looked down.
-        { slug: "villa-blanche-cap-dantibes", file: "02", focal: [55, 50] as const, name: "Villa Blanche", town: "CAP D'ANTIBES" },
-        { slug: "bastide-du-ciel-gassin", file: "02", focal: [72, 44] as const, name: "Bastide du Ciel", town: "GASSIN" },
+        // where a palm hid the porch and the drone looked down. Fix pass 3:
+        // 42, so the umbrella pines at left are in the card and the house
+        // reads among pines, not as a white box.
+        { slug: "villa-blanche-cap-dantibes", file: "02", focal: [42, 50] as const, name: "Villa Blanche", town: "CAP D'ANTIBES" },
+        // Fix pass 3: 36, so the garden chairs, table and lounger on the
+        // gravel leave the bottom of the card and the pine crown keeps its air.
+        { slug: "bastide-du-ciel-gassin", file: "02", focal: [72, 36] as const, name: "Bastide du Ciel", town: "GASSIN" },
       ],
       link: { label: "ALL THE HOUSES", href: "/estates" },
     },

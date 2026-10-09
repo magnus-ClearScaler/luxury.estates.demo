@@ -70,6 +70,25 @@ export type Tune = {
    * global saturation cuts that greyed the pines and the stone.
    */
   pool?: readonly [number, number, number, number];
+  /**
+   * Fix pass 3: inside the `pool` box, the value lift towards white (default
+   * .18; negative darkens) and a minimum grey green saturation, for a pale,
+   * milky pool that stayed ice blue (Villa Blanche 02 and 03).
+   */
+  poolLift?: number;
+  poolTint?: number;
+  /**
+   * Fix pass 3: highlight roll-off. The knee, as a fraction of 255, above
+   * which every channel eases onto the paper tone #F6F2EB instead of
+   * clipping to white (Villa Blanche 02).
+   */
+  white?: number;
+  /**
+   * Fix pass 3: strength (0 to 1) of the blue sky pass, which finds the sky
+   * by hue rather than by brightness and height, for a deep blue sky that
+   * runs down beside a white facade (Villa Camille 11).
+   */
+  skyBlue?: number;
 };
 
 /**
@@ -271,16 +290,16 @@ const own: Own[] = [
       // R2.5.2: the drone comes forward so the house is seen twice before
       // the rooms; 03 comes back cut left of the kitchen, so the page no
       // longer ends on a detail.
-      p("01", "hero", [50, 55], "standard", "White house above a reflecting pool", { tune: SKY }),
+      // Fix pass 3: the white walls clipped (3% of the frame at 255); they
+      // now roll off onto the paper tone.
+      p("01", "hero", [50, 55], "standard", "White house above a reflecting pool", { tune: { ...SKY, white: 0.8 } }),
       p("02", "wide", [50, 50], "strong", "The pool from above", { extract: [0, 0.22, 1, 0.78] }),
       p("07", "portrait", [50, 50], "standard", "Linen pergola"),
       p("05", "portrait", [40, 50], "interior", "Bedroom with an arched window", {
         tune: { blue: [0.02, 0.06, 0.925] },
       }),
-      p("04", "detail", [50, 50], "interior", "Timber beams", {
-        extract: [0.4, 0.02, 0.26, 0.46],
-        tune: { blue: [0.02, 0.06, 0.915] },
-      }),
+      // Fix pass 3: the beams detail (04, 499px wide for a 440px slot) is
+      // dropped; no frame of this set gives a sharp detail.
       // The brief's [0, 0, .7, 1] still showed the bar stools at its right
       // edge: cut to the left 60%, at about 1.62, so nothing is cropped again.
       p("03", "wide", [50, 50], "interior", "Dining room open to the garden", {
@@ -300,11 +319,21 @@ const own: Own[] = [
       // Fix pass 2: the hero is also the Home statement image (21:9 at
       // 65/40). It was yellower than its neighbours and haloed along the
       // tree line: no sharpening and cooler red and blue rows. 07, the top
-      // down drone, is dropped (roofs, a near white pool, a teal tarp); 02,
-      // the long pool with the bastide behind, comes second.
+      // down drone, is dropped (roofs, a near white pool, a teal tarp).
       p("01", "hero", [65, 50], "garden", "The bastide across its lawn, among old olives", {
         tune: { ...SKY, sharpen: 0, red: [0.95, 0.07, 0.03], blue: [0.05, 0.11, 0.82] },
       }),
+      p("03", "portrait", [40, 50], "garden", "Vine pergola along the house"),
+      // Cut above the sill and its debris.
+      p("05", "portrait", [45, 50], "garden", "The garden through an open shutter", {
+        extract: [0.1, 0, 0.8, 0.86],
+      }),
+      // Fix pass 3: 08 (the vaulted salon) is dropped: a wrapped pot, a stack
+      // of magazines and a light switch on the table, a standing lamp, and
+      // a bright white room with saturated pink flowers beside the warm
+      // exteriors. The listing's full set online (twenty frames) has no
+      // other exterior of the house, so the page ends on 02, the
+      // long pool with the bastide behind it, after the pair.
       // At .32 the pool went almost white and the frame read as a sepia
       // print. The lower half of the empty pool is cut and the saturation
       // is .7, so the pool reads grey green and the stone and ivy keep
@@ -313,13 +342,6 @@ const own: Own[] = [
         extract: [0, 0, 1, 0.8],
         tune: { ...SKY, saturation: 0.7 },
       }),
-      p("03", "portrait", [40, 50], "garden", "Vine pergola along the house"),
-      // Cut above the sill and its debris.
-      p("05", "portrait", [45, 50], "garden", "The garden through an open shutter", {
-        extract: [0.1, 0, 0.8, 0.86],
-      }),
-      // Fix pass 2: 65/45 moves the standing lamp at the left out of the crop.
-      p("08", "detail", [65, 45], "interior", "Arched windows in the vaulted salon", { tune: { pink: 0.6 } }),
     ],
   },
   {
@@ -371,15 +393,41 @@ const own: Own[] = [
       // cuts the thatched pool bar, and leaves only a small piece of the
       // palm frond at top right (the porch's last column sits at .904, so
       // the right edge stays at .91).
+      // Fix pass 3: the palm frond in the top right corner is cloned out
+      // from the clear sky to its left; the white stone, which clipped to
+      // 255 and read as a render, rolls off onto the paper tone (`white`)
+      // at brightness .95; the red row is a step lower, so the facade is
+      // the cream of Camille and Mas Blanc, not yellow; the milky pool is
+      // darkened a little and kept grey green (`poolLift`, `poolTint`).
       p("02", "hero", [50, 60], "standard", "The villa among the stone pines, its pool in front", {
-        extract: [0.16, 0.14, 0.75, 0.78],
-        tune: { sky: 0.75, pool: [0, 0.6, 1, 0.4], red: [0.95, 0.06, 0.03], blue: [0.05, 0.11, 0.82] },
+        extract: [0.16, 0.14, 0.72, 0.78],
+        tune: {
+          sky: 0.9,
+          pool: [0, 0.6, 1, 0.4],
+          poolLift: -0.1,
+          poolTint: 0.08,
+          red: [0.93, 0.06, 0.03],
+          blue: [0.05, 0.11, 0.82],
+          brightness: 0.95,
+          white: 0.72,
+        },
+        patches: [
+          { from: [0.785, 0.06], to: [0.835, 0.06, 0.05, 0.38] },
+        ],
       }),
       // 01 (aerial) and 03 (drone looking down on the tower) are kept apart
       // by 10. Fix pass 2: as 02, on `standard` with the pool pass, no
       // global saturation cut.
       p("03", "portrait", [58, 42], "standard", "The lantern tower and balconies", {
-        tune: { pool: [0, 0.55, 0.5, 0.45], red: [0.94, 0.06, 0.03], blue: [0.05, 0.11, 0.84] },
+        tune: {
+          pool: [0, 0.55, 0.5, 0.45],
+          poolLift: -0.1,
+          poolTint: 0.08,
+          red: [0.93, 0.06, 0.03],
+          blue: [0.05, 0.11, 0.84],
+          brightness: 0.98,
+          white: 0.72,
+        },
       }),
       p("10", "portrait", [50, 45], "strong", "Entrance stair under plane trees"),
       // Fix pass 2: 05 (the colonnade from almost the hero's angle) is
@@ -412,36 +460,49 @@ const own: Own[] = [
       // went green grey), brightness .97 and the sky pass at .9 on a
       // slightly higher mask ramp, so the sky is the warm grey and the
       // stone reads pale ivory.
+      // Fix pass 3: the sky was the coolest on Home (green grey, with a
+      // halo at top right) and the bougainvillea a grey mauve smear. A
+      // warmer red row, the sky pass at full strength on a lower mask ramp,
+      // and the pink pass at .5 so the flowers keep a faint rose.
       p("02", "hero", [50, 52], "strong", "The villa among olives and bougainvillea, the sea at right", {
-        tune: { red: [0.97, 0.06, 0.02], sky: 0.9, saturation: 0.38, skyLum: [0.3, 0.52], brightness: 0.97 },
+        tune: {
+          red: [0.99, 0.06, 0.02],
+          sky: true,
+          saturation: 0.38,
+          skyLum: [0.24, 0.46],
+          brightness: 0.97,
+          pink: 0.5,
+          white: 0.78,
+          skyBlue: 0.7,
+        },
       }),
+      // Fix pass 3: the pair is the terrace and, from the listing's full set
+      // online, the villa's carved corner and bay above the terrace (11, cut
+      // above the wicker chairs and to the facade, so little sky is left;
+      // that sky takes the blue sky pass).
       p("07", "portrait", [35, 60], "strong", "Balustraded terrace over the open sea", { tune: { pink: 0.6 } }),
-      // Focal 62 keeps the diving board out on the left.
-      p("03", "portrait", [62, 40], "strong", "The villa above its pool terrace", {
-        // The pool stayed blue at .42 (the brief's value): .3.
-        tune: { ...NEUTRAL_SKY, ...SKY, saturation: 0.3 },
+      p("11", "portrait", [40, 20], "strong", "The carved corner of the villa above the terrace", {
+        extract: [0, 0.02, 0.62, 0.64],
+        tune: { ...NEUTRAL_SKY, saturation: 0.36, skyBlue: 1 },
       }),
-      // Fix pass 2: the lone detail is the house, not the bay (08). 04 cut
-      // to the villa, its tower and terrace; the built up slope to the
-      // right and the road above fall outside, and a parked car behind the
-      // tower roof is cloned out from the gravel beside it.
-      p("04", "detail", [50, 40], "strong", "The villa, its tower and terrace above the coast", {
-        extract: [0, 0.17, 0.32, 0.5],
-        tune: NEUTRAL_SKY,
-        patches: [
-          { from: [0.062, 0.2], to: [0.09, 0.2, 0.03, 0.024] },
-          { from: [0.066, 0.214], to: [0.09, 0.214, 0.017, 0.02] },
-        ],
+      // Fix pass 3: the bay detail comes back (the brief's extract, a hair
+      // wider so the served file is at least 880px across for the 440px
+      // slot); the soft 04 (560px, a whole house shrunk into the smallest
+      // slot) is dropped.
+      p("08", "detail", [50, 50], "strong", "The bay below the house", {
+        extract: [0, 0.12, 0.51, 0.88],
+        tune: { ...NEUTRAL_SKY, ...SKY, saturation: 0.36 },
       }),
-      // Shrinks the palm frond at top left. Fix pass: the top cut is .18, so
-      // the flat sky no longer fills a third of the frame; the page ends here,
-      // on the house, not on the Monaco view.
-      p("01", "wide", [50, 60], "strong", "The forecourt facade and its curved stair", {
-        extract: [0.1, 0.18, 0.9, 0.82],
-        // The house fills the top of the frame, so the sky pass alone left
-        // the open sky at right slate blue: the neutral sky rows, saturation
-        // .32 and the lowered mask ramp as well.
-        tune: { ...NEUTRAL_SKY, ...SKY, saturation: 0.32, skyLum: [0.34, 0.56] },
+      // Fix pass 3: the pool terrace as a wide, cut above the two chrome
+      // ladders, the diving board and the near loungers (villa, terrace and
+      // the far edge of the pool); the pool pass on what remains. The page
+      // ends here, on the house. 01 (the forecourt facade) is dropped: the
+      // palm frond crosses the carved central gable, which no clone can
+      // rebuild, and the crop below it took the roof and chimneys; the hero
+      // already shows that facade from nearer.
+      p("03", "wide", [50, 40], "strong", "The villa above its pool terrace", {
+        extract: [0.1, 0, 0.9, 0.72],
+        tune: { ...NEUTRAL_SKY, ...SKY, saturation: 0.3, pool: [0, 0.85, 1, 0.15] },
       }),
       // Dropped in the fix pass: 06 (the villa above Monaco). Cars on the
       // coast road and in the car park below the towers stay in every crop
@@ -461,13 +522,21 @@ const own: Own[] = [
       // .68; the pair on the terrace stays, as cutting it would clip the house.
       p("06", "hero", [40, 45], "garden", "The second house across its lawn and pool, under old oaks", {
         extract: [0, 0.08, 0.7, 0.68],
-        tune: SKY,
+        // Fix pass 3: the blue sky and white clouds at top right go to the
+        // one warm grey (the blue sky pass) and the clouds roll off.
+        tune: { ...SKY, skyBlue: 0.8, white: 0.8 },
       }),
       p("04", "portrait", [30, 50], "garden", "Balcony and loggia under the vine"),
       p("07", "portrait", [35, 50], "garden", "Table under the wisteria, the pool beyond"),
-      // Fix pass 2: focal 28 puts the right edge at the pillar, so the
-      // orange armchair stays out; the stair, newel and rail stay whole.
-      p("08", "detail", [28, 50], "interior", "Stone stair and iron rail"),
+      // Fix pass 3: the stair (08) is dropped: an ultra wide interior, the
+      // orange chair inside the crop and a stark white finish beside the
+      // garden frames. 01, the corner of the house with its loggia under
+      // the vine, comes in its place, cut left of the parasols and the
+      // pool and above the lawn and a sprinkler.
+      p("01", "wide", [50, 50], "garden", "The corner of the house, its loggia under the vine", {
+        extract: [0.07, 0.02, 0.63, 0.72],
+        tune: SKY,
+      }),
       // Fix pass 2: 05 is dropped (a stop darker than 02 and 06, and a
       // garden hose at the foot of the loggia). The page ends on 02, so
       // the house is seen twice.
@@ -490,9 +559,11 @@ const own: Own[] = [
         tune: { ...CIEL, ...SKY },
       }),
       p("03", "wide", [50, 50], "standard", "Vine pergola along the house", { tune: CIEL_SKY }),
+      // Fix pass 3: 01 (a drone over the house) comes before the pair, so
+      // it is no longer next to the drone panorama (09).
+      p("01", "wide", [50, 50], "standard", "The house under a great umbrella pine", { tune: { ...CIEL, ...SKY } }),
       p("04", "portrait", [70, 50], "standard", "Shuttered courtyard", { tune: CIEL }),
       p("05", "portrait", [65, 50], "standard", "The glass veranda", { tune: CIEL_SKY }),
-      p("01", "wide", [50, 50], "standard", "The house under a great umbrella pine", { tune: { ...CIEL, ...SKY } }),
       // Fix pass 2: 06 (wrapped parasols and loungers either side of the
       // pool) is dropped. A view, last, after five frames of the house.
       p("09", "wide", [50, 50], "standard", "The hills to the Gulf of Saint-Tropez", { tune: { ...CIEL, ...SKY } }),
@@ -506,14 +577,27 @@ const own: Own[] = [
     region: "collines",
     outlook: "Garden and pines",
     gallery: [
-      p("01", "hero", [50, 50], "standard", "The rose house above its green pool, among pines and cypress", { tune: SKY }),
+      // Fix pass 3: cut in on the house (the empty lawn in front and the
+      // sky and pines at the sides go), so the rose facade is larger than
+      // the row of loungers at 1.62 and at 4:5.
+      p("01", "hero", [60, 50], "standard", "The rose house above its green pool, among pines and cypress", {
+        extract: [0.12, 0.16, 0.8, 0.72],
+        tune: SKY,
+      }),
       // Fix pass: the portrait pair comes before 04, so the two aerials (the
       // hero and 04) are no longer side by side.
       p("03", "portrait", [45, 50], "standard", "Under the reed pergola"),
       p("07", "portrait", [20, 50], "interior", "French windows open to the vines"),
       p("04", "wide", [50, 55], "garden", "The house in the pines, the sea beyond", { tune: SKY }),
+      // Fix pass 3: the pool detail (05, pool and loungers, no house) is
+      // replaced by the facade itself, from the listing's full set online
+      // (10: the hipped roof, the sage shutters, the pergola), so house
+      // frames outnumber furniture frames.
+      p("10", "detail", [50, 50], "standard", "Sage shutters under the hipped roof", {
+        extract: [0, 0.06, 1, 0.52],
+        tune: { sky: 0.6 },
+      }),
       // Blue skies beside the hero's warm grey: a light sky pass.
-      p("05", "detail", [40, 40], "standard", "Two cypresses over the pool", { tune: { sky: 0.6 } }),
       p("06", "wide", [50, 50], "standard", "The long table under the pergola", { tune: { sky: 0.6 } }),
     ],
   },
@@ -561,8 +645,10 @@ const own: Own[] = [
         tune: VIGNES_WALLS,
       }),
       // Round 3: cut to the table, the garden door and the first beams.
-      p("06", "portrait", [50, 65], "interior", "Beams and stone floor", {
-        extract: [0.2, 0.2, 0.396, 0.78],
+      // Fix pass 3: that cut was 760px wide for a portrait slot; the full
+      // height at 4:5 (1037px) keeps the arch and the beams above.
+      p("06", "portrait", [50, 50], "interior", "Beams and stone floor", {
+        extract: [0.18, 0, 0.54, 1],
         tune: VIGNES_WALLS,
       }),
       p("07", "portrait", [50, 50], "interior", "Bedroom to the garden", { tune: VIGNES_WALLS }),
@@ -597,8 +683,8 @@ const own: Own[] = [
       }),
       p("07", "portrait", [50, 50], "interior", "Winter garden"),
       p("12", "portrait", [40, 50], "strong", "Pool and sea from the winter garden", { tune: NEUTRAL_SKY }),
-      // Round 2: the curtain and the window only, no sofa.
-      p("04", "detail", [50, 50], "interior", "Salon window", { extract: [0.14, 0.2, 0.22, 0.37] }),
+      // Fix pass 3: 04 (a near blank salon window, the third glazing frame
+      // in a row) is dropped.
       p("11", "wide", [50, 50], "strong", "Pool along the garden wall"),
       // The pool still read blue at the preset's .5: .42 (R2.5).
       p("02", "wide", [62, 50], "strong", "Olive tree beside an infinity pool and the sea", {
