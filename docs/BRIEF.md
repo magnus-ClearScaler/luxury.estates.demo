@@ -92,7 +92,7 @@ The structure does not change: film, intro line, feature pair, statement with it
 | Feature pair, portrait | 0.76 | **Villa Camille 02** | 50/50 | The full 1891 facade with balustraded steps, the olive branch above, bougainvillea at the right edge, sea at right. Native 1750x1864; the crop takes 1417px of width centred and keeps all of the height. |
 | Statement image | 21:9 (mobile `wide`) | **Bastide des Oliviers 01** | 50/35 | The whole bastide under ivy, old olives either side, the lawn and the hills. Rendered and checked at 21:9 and at 1.62. |
 | Estates row, card 1 | 0.76 | **Les Arcades 02** | 50/50 | Straight up the axis: the path, the hedges, the cypresses and the arched ivy door, centred. |
-| Estates row, card 2 | 0.76 | **Villa Blanche 03** | 58/42 | The lantern tower and the balconies; 58 keeps the thatched pool bar out on the left; the pool corner bottom left takes the cyan pass. |
+| Estates row, card 2 | 0.76 | **Villa Blanche 02** (fix pass; was 03) | 52/50 | The colonnade, the iron balconies and the pool; 03 was darker, seen from a drone, and a palm hid the porch. |
 | Estates row, card 3 | 0.76 | **Bastide du Ciel 02** | 72/50 | The ochre bastide and the cypress, the gulf of Saint-Tropez behind; the house is in the right half, so the crop sits right. Chosen over Le Mas Rose 01, where the house sits small behind loungers. |
 | Linen band | 1.62 | **Maison du Chemin 02** | 50/50 | The facade in its garden behind the old tree, arched steel windows, agapanthus; dappled light that suits "In person, before ten". |
 
@@ -255,6 +255,18 @@ Dropped: 02 (repeats the hero, wide angle), 08 (loud blue rug, orange vases), 09
 | Domaine des Vignes 04 | `garden` | | yes | |
 
 Acceptance before any page is rebuilt (section 8, extended): one contact sheet of the eleven graded heroes in index order, and a second of the seven Home stills in page order, both with Mas Blanc 01 as the reference. Both must read as one shoot at one hour: every sky on the one warm grey, every pool green grey (not cyan), and the Oliviers, Ciel and Chemin lawns no greener than Domaine des Vignes. The known risks are the Villa Camille skies, the Oliviers pool (02) and the Bastide du Ciel HDR. If one frame stands out, tune that frame, not the preset.
+
+### R2.6.1 Fix pass 1 (bosses' review of v2r0)
+
+Galleries now run, where they changed (hero first):
+- Bastide des Oliviers: 01, 07, 03 + 05, 08, 02. 07 takes saturation .32; 02 takes `extract: [0, 0, 1, 0.8]` and saturation .7.
+- Les Arcades: 02, 03, 07 + 08, 06, 01. 01 takes `extract: [0.1, 0.14, 0.9, 0.74]` (a red car at the left edge).
+- Villa Blanche: 02, 03 + 10, 05, 01, 07, 04. Home card 2 is Villa Blanche 02 at 52/50.
+- Villa Camille: 02, 07 + 03, 08, 01. 06 is dropped (cars on the coast road and in a car park in every crop that keeps the villa). Every exterior takes NEUTRAL_SKY with SKY; 02 and 01 also lower the sky mask's luminance ramp (`skyLum`), so the slate sky is pulled to the warm grey. 01 takes `extract: [0.1, 0.18, 0.9, 0.82]`.
+- Maison du Chemin: hero 06 `extract: [0, 0.08, 0.7, 0.68]`, focal 40/45; 05 `extract: [0.37, 0, 0.63, 1]`.
+- Bastide du Ciel: CIEL is saturation .55, linear .95/8; hero 02 takes `extract: [0, 0, 1, 0.94]`.
+- Le Mas Rose: 01, 03 + 07, 04, 05, 06.
+- Maison Edouard: 02 takes saturation .42. Hero 01 unchanged: no extract makes the neighbour a sliver and keeps the right wing; first to cut, as R2.1 says.
 
 ### R2.7 Checks before calling it done
 

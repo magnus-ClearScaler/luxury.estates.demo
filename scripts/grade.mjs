@@ -332,16 +332,22 @@ function pinkPass({ data, info }, strength) {
   }
 }
 
-/** Sky mask weight at row y, luminance l (0..1): the upper frame, bright pixels only. */
-function skyWeight(y, h, l) {
-  return (1 - smooth(0.25, 0.5, y / h)) * smooth(0.42, 0.66, l);
+/**
+ * Sky mask weight at row y, luminance l (0..1): the upper frame, bright pixels
+ * only. `lum` is the luminance ramp, [.42, .66] by default; owner round 2 fix
+ * pass: `tune.skyLum` lowers it for a deep blue sky that grades to slate and
+ * would otherwise fall outside the mask (Villa Camille 02).
+ */
+function skyWeight(y, h, l, lum = SKY_LUM) {
+  return (1 - smooth(0.25, 0.5, y / h)) * smooth(lum[0], lum[1], l);
 }
+const SKY_LUM = [0.42, 0.66];
 
 /**
  * Mean RGB of the top 12% of a raw image, weighted by the sky mask (pine
  * canopy and roofs count for little). Exported for the QA sampler.
  */
-export function skyMean({ data, info }) {
+export function skyMean({ data, info }, lum = SKY_LUM) {
   const c = info.channels;
   const rows = Math.round(info.height * 0.12);
   const sum = [0, 0, 0];
@@ -350,7 +356,7 @@ export function skyMean({ data, info }) {
     for (let x = 0; x < info.width; x++) {
       const o = (y * info.width + x) * c;
       const l = (0.2126 * data[o] + 0.7152 * data[o + 1] + 0.0722 * data[o + 2]) / 255;
-      const w = skyWeight(y, info.height, l);
+      const w = skyWeight(y, info.height, l, lum);
       sum[0] += w * data[o];
       sum[1] += w * data[o + 1];
       sum[2] += w * data[o + 2];
@@ -367,17 +373,17 @@ export function skyMean({ data, info }) {
  * mask fades out between 25% and 50% of the height and on darker pixels, so
  * the sea, the pines and the house below are untouched.
  */
-function skyPass(img, strength) {
+function skyPass(img, strength, ramp = SKY_LUM) {
   const { data, info } = img;
   const c = info.channels;
   const w = info.width, h = info.height;
-  const graded = skyMean(img);
+  const graded = skyMean(img, ramp);
   const masks = new Float32Array(w * h);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       const i = y * w + x, o = i * c;
       const l = (0.2126 * data[o] + 0.7152 * data[o + 1] + 0.0722 * data[o + 2]) / 255;
-      const m = skyWeight(y, h, l) * strength;
+      const m = skyWeight(y, h, l, ramp) * strength;
       masks[i] = m;
       if (m <= 0) continue;
       const lum = l * 255;
@@ -385,7 +391,7 @@ function skyPass(img, strength) {
       for (let ch = 0; ch < 3; ch++) data[o + ch] = Math.round(lum + (data[o + ch] - lum) * k);
     }
   }
-  const before = skyMean(img);
+  const before = skyMean(img, ramp);
   if (!before) return null;
   // The measured mean is mask weighted, so a full offset on a part-weighted
   // pixel would fall short: scale by sum(m) / sum(m^2) over the top 12%
@@ -404,7 +410,7 @@ function skyPass(img, strength) {
     const o = i * c;
     for (let ch = 0; ch < 3; ch++) data[o + ch] = Math.max(0, Math.min(255, Math.round(data[o + ch] + off[ch] * m)));
   }
-  return { before: graded, after: skyMean(img) };
+  return { before: graded, after: skyMean(img, ramp) };
 }
 
 /**
@@ -501,7 +507,7 @@ export async function gradeFile(input, out, presetName, opts = {}) {
     if (p.gamma !== 1) gammaPass(img, p.gamma);
     if (p.cyan) cyanPass(img);
     if (p.pink > 0) pinkPass(img, p.pink);
-    if (p.sky > 0) sky = skyPass(img, p.sky);
+    if (p.sky > 0) sky = skyPass(img, p.sky, opts.tune?.skyLum);
     last = fromRaw(img);
   }
   // Round 3: `tune.sharpen` 0 leaves an image unsharpened (the Bastide

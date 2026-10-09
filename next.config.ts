@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 /** Brief 11.3. */
 const nextConfig: NextConfig = {
+  // Owner round 2 fix pass: no Next.js dev badge in the review screenshots.
+  devIndicators: false,
   images: {
     formats: ["image/avif", "image/webp"],
     // Next 16 ignores qualities that are not declared here.

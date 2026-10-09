@@ -109,7 +109,9 @@ const raw = {
       eyebrow: "ESTATES",
       cards: [
         { slug: "les-arcades-ramatuelle", file: "02", focal: [50, 50] as const, name: "Les Arcades", town: "RAMATUELLE" },
-        { slug: "villa-blanche-cap-dantibes", file: "03", focal: [58, 42] as const, name: "Villa Blanche", town: "CAP D'ANTIBES" },
+        // Fix pass: 02 (the colonnade, the iron balconies and the pool), not 03,
+        // where a palm hid the porch and the drone looked down.
+        { slug: "villa-blanche-cap-dantibes", file: "02", focal: [52, 50] as const, name: "Villa Blanche", town: "CAP D'ANTIBES" },
         { slug: "bastide-du-ciel-gassin", file: "02", focal: [72, 50] as const, name: "Bastide du Ciel", town: "GASSIN" },
       ],
       link: { label: "ALL THE HOUSES", href: "/estates" },
