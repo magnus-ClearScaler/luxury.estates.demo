@@ -24,11 +24,10 @@
 
 /* ---------- Tables ---------- */
 
-/* Round 2: the tables size to their content (capped at the container)
-   rather than stretching six short columns across 1392px. */
+/* Round 3: full width, so each row's hairline runs to the end of the rule
+   under its h2 rather than stopping at about 60% of it. */
 .table {
-  width: auto;
-  max-width: 100%;
+  width: 100%;
   border-collapse: collapse;
 }
 

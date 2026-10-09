@@ -510,26 +510,28 @@ select.input option {
 .hero-film-video[data-playing="true"] {
   opacity: 1;
 }
-/* Desktop: inset at the gutter, 65px below the header, about 72vh tall
-   (owner round 1: no longer a full 16:9, so the page below shows in the
-   first screen). The film covers the box. */
+/* Desktop: inset at the gutter, about 72vh tall (owner round 1: no longer a
+   full 16:9). Round 3: 32px below the header (was 65px) and never taller
+   than the screen less 300px, so the intro eyebrow and h2 land in the first
+   screen (at 1440 x 900 the film runs 120 to 720, the h2 starts near 850).
+   The film covers the box. */
 @media (min-width: 768px) {
   .hero-film-wrap {
     max-width: var(--container);
     margin-inline: auto;
     padding-inline: var(--gutter);
-    padding-top: 65px;
+    padding-top: 32px;
   }
   .hero-film {
     aspect-ratio: auto;
     width: 100%;
-    height: clamp(520px, 72vh, 760px);
+    height: clamp(520px, min(72vh, calc(100svh - 300px)), 760px);
   }
-  /* Round 2: the inset box is about 2.15:1, so the film is cut top and
-     bottom; 50/30 keeps the horizon and the in-focus middle band of the
-     water and drops the blurred foreground. */
+  /* Round 3: the film is the 2560 x 1440 aerial over a still sea; the box is
+     about 2.3:1, and 50/35 sets the horizon at about two fifths of its
+     height with the sky above and drops the shallows at the bottom. */
   .hero-film-media {
-    object-position: 50% 30%;
+    object-position: 50% 35%;
   }
 }
 

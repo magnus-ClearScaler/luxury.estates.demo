@@ -101,21 +101,28 @@ export const atmosphere: Record<AtmosphereSlot, Atmosphere> = {
     tune: { saturation: 0.6, hue: 5, red: [0.99, 0.03, 0] },
   }),
   // Round 2: lifted, so the wall reads warm off-white with a crisp stripe.
-  houseDetail: a("shutter-light-on-wall", [50, 55], "Shutter light across a plaster wall", {
+  // Round 3: still grey-mauve with a dark top right corner. Cut to the lower
+  // 62% (the stripes sit high in the 4:5 and the dark corner falls away),
+  // saturation .5, hue +6 and a warmer red row, and the shadows lifted hard
+  // (linear .82, 52) so the wall reads warm off-white beside the vault.
+  houseDetail: a("shutter-light-on-wall", [50, 50], "Shutter light across a plaster wall", {
     grade: "warm",
-    tune: { brightness: 1.18, linear: [1.05, 8] },
+    extract: [0.1, 0.38, 0.9, 0.62],
+    tune: { brightness: 1.3, linear: [0.82, 52], saturation: 0.5, hue: 6, red: [1.01, 0.05, 0.01] },
   }),
   // Focal 50/65: the grey water and the boat carry the crop, not the sky.
-  // Round 2: a pale dawn rather than peach. The asked-for saturation .6 and
-  // hue +6 still read salmon beside the paper; .4, hue +10 and a lower red
-  // row land on grey beige.
+  // Round 3: the `standard` grade left the upper sky grey-green beside the
+  // paper. The `warm` preset (its lower green row and lift) at saturation .3
+  // lands it on grey beige, as the sailboat.
   enquire: a("boat-still-water-dawn", [50, 65], "A rowing boat on still water at dawn", {
-    grade: "standard",
-    tune: { saturation: 0.4, hue: 10, red: [0.95, 0.04, 0] },
+    grade: "warm",
+    tune: { saturation: 0.3, hue: 0, brightness: 1.04 },
   }),
   // Round 2: the quietest frame on the site, not the loudest: saturation .5
-  // and the shadows lifted.
+  // and the shadows lifted. Round 3: the left 60% only, so the pale backlit
+  // linen fills the frame and the heavy dark-brown right third is gone.
   enquireSent: a("linen-curtain-backlit", [50, 50], "Morning light through a linen curtain", {
+    extract: [0, 0, 0.6, 1],
     tune: { saturation: 0.42, linear: [0.88, 24] },
   }),
   notFound: a("sheer-curtain-window", [50, 50], "A sheer curtain at a tall window", {
@@ -145,15 +152,20 @@ export const atmosphereCredits: CreditRow[] = deployedAtmosphere.map((x) => {
 
 type Video = { file: string; credit: string; source_url: string };
 
-/** The hero film (brief 7.3); the other three clips are not deployed. */
+/**
+ * The hero film (brief 7.3); the other three clips are not deployed. Round 3:
+ * the 2560 x 1440 aerial `sea-pale-horizon` replaces `sea-surface-warm-dusk`,
+ * which exists only at 1080p with a shallow focus and stayed soft at 1440
+ * (scripts/encode-video.sh).
+ */
 export const film = (() => {
-  const v = (videos as Video[]).find((x) => x.file === "/video/sea-surface-warm-dusk.mp4");
+  const v = (videos as Video[]).find((x) => x.file === "/video/sea-pale-horizon.mp4");
   if (!v) throw new Error("Missing hero film credit");
   return {
-    name: "sea-surface-warm-dusk",
-    poster: "/video/sea-surface-warm-dusk-poster.jpg",
+    name: "sea-pale-horizon",
+    poster: "/video/sea-pale-horizon-poster.jpg",
     credit: {
-      file: "sea-surface-warm-dusk.mp4",
+      file: "sea-pale-horizon.mp4",
       photographer: v.credit.replace(/^Video by /, "").replace(/ on Pexels$/, ""),
       source: "Pexels",
       sourceUrl: v.source_url,

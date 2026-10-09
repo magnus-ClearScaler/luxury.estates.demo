@@ -74,15 +74,16 @@ const raw = {
     /**
      * Owner round 1: Home shows the houses. The feature pair and the linen
      * band are estate photographs (slug and file; alt from the gallery entry).
-     * Round 2: none of them is a house's hero, so no photograph is seen on
-     * Home, again on /estates and again atop its page; and the sea houses
-     * lead. Les Pins is the featured house again (conductor decision 10),
-     * with the brief's own sentence.
+     * Round 3: both bosses dropped round 2's "no hero on Home" rule for the
+     * owner's "calmest, widest house frames": Les Pins 01 as brief 6.1.3
+     * (pines over the sea, contrails and pole retouched out), the Villa
+     * Blanche entrance stair, Mas Blanc 01 and Édouard 02 back in the row,
+     * and the Le Belvédère deck in the band. Six houses, none twice.
      */
     featureWide: {
       estate: "les-pins-eze",
-      file: "03",
-      focal: [50, 50] as const,
+      file: "01",
+      focal: [50, 40] as const,
       eyebrow: "ÈZE BORD DE MER",
       title: "Les Pins",
       body: "A new house of stone and pale oak among old umbrella pines, above the sea.",
@@ -90,8 +91,8 @@ const raw = {
     },
     featurePortrait: {
       estate: "villa-blanche-cap-dantibes",
-      file: "07",
-      focal: [40, 50] as const,
+      file: "10",
+      focal: [50, 45] as const,
       eyebrow: "THE HOUSE",
       title: "Held quietly",
       body: "A small number of houses each year, each shown at the hour it is at its best.",
@@ -103,16 +104,16 @@ const raw = {
     estatesRow: {
       eyebrow: "ESTATES",
       cards: [
-        { slug: "mas-blanc-mougins", file: "07", focal: [50, 50] as const, name: "Mas Blanc", town: "MOUGINS" },
-        { slug: "maison-edouard-beaulieu", file: "12", focal: [40, 50] as const, name: "Maison Édouard", town: "BEAULIEU-SUR-MER" },
+        { slug: "mas-blanc-mougins", file: "01", focal: [50, 55] as const, name: "Mas Blanc", town: "MOUGINS" },
+        { slug: "maison-edouard-beaulieu", file: "02", focal: [62, 50] as const, name: "Maison Édouard", town: "BEAULIEU-SUR-MER" },
         { slug: "bastide-des-pres-chateauneuf", file: "02", focal: [50, 45] as const, name: "Bastide des Prés", town: "CHÂTEAUNEUF-GRASSE" },
       ],
       link: { label: "ALL THE HOUSES", href: "/estates" },
     },
     band: {
-      estate: "villa-blanche-cap-dantibes",
-      file: "04",
-      focal: [50, 50] as const,
+      estate: "le-belvedere-nice",
+      file: "01",
+      focal: [50, 45] as const,
       eyebrow: "VIEWINGS",
       title: "In person, before ten.",
       body: "Viewings are private and held in the morning, when the light is level and the roads are empty.",

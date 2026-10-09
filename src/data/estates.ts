@@ -50,7 +50,19 @@ export type Tune = {
   sky?: boolean | number;
   /** `false` turns off the hue-selective cyan pass the listing presets run. */
   cyan?: boolean;
+  /** Round 3: replaces the sharpen sigma (.4); 0 for no sharpening. */
+  sharpen?: number;
+  /** Round 3: strength (0 to 1) of the pink pass, which mutes magenta and maroon. */
+  pink?: number;
 };
+
+/**
+ * Round 3 retouch (scripts/grade.mjs `retouch`): `to` (`[left, top, width,
+ * height]`, fractions of the source) is covered, with a feathered edge, by
+ * the clean area whose top left corner is `from`, or, without `from`, by a
+ * median-filtered copy of itself (which takes out a thin contrail or wire).
+ */
+export type Patch = { from?: readonly [number, number]; to: readonly [number, number, number, number] };
 
 export type Photo = {
   /** File number in the source folder, also the served name: `01` → `/estates/<slug>/01.jpg`. */
@@ -61,6 +73,7 @@ export type Photo = {
   alt: string;
   extract?: Extract;
   tune?: Tune;
+  patches?: readonly Patch[];
 };
 
 type SourceListing = {
@@ -117,6 +130,12 @@ export type Estate = {
   agencyRef: string;
   /** Hero first (`frame: "hero"`), then the sequence in order. Empty for held houses. */
   gallery: Photo[];
+  /**
+   * Round 3: the gallery file shown on the /estates row instead of the hero,
+   * where the hero has no building in it. The estate page still opens on the
+   * hero.
+   */
+  indexFrame?: { file: string; focal: Focal };
 };
 
 const sources = [...(east as SourceListing[]), ...(west as SourceListing[])];
@@ -138,6 +157,7 @@ type Own = {
   /** Replaces the source features list; used for Mas Blanc only (brief 7, rules). */
   features?: string[];
   gallery: Photo[];
+  indexFrame?: { file: string; focal: Focal };
 };
 
 function p(
@@ -146,7 +166,7 @@ function p(
   focal: Focal,
   grade: Grade,
   alt: string,
-  more: { extract?: Extract; tune?: Tune } = {},
+  more: { extract?: Extract; tune?: Tune; patches?: readonly Patch[] } = {},
 ): Photo {
   return { file, frame, focal, grade, alt, ...more };
 }
@@ -176,6 +196,21 @@ const COLLINES_WALLS: Tune = { red: [1.0, 0.04, 0], brightness: 1.08 };
 const VIGNES_WALLS: Tune = { blue: [0.02, 0.07, 0.92], brightness: 1.08 };
 const BASTIDE_WALLS: Tune = { blue: [0.02, 0.06, 0.92] };
 
+/**
+ * Round 3: the Bastide garden frames read as HDR beside Mas Blanc and Domaine
+ * des Vignes (crunchy foliage, yellow-green lawns). Less saturation, a lower
+ * green row, flatter contrast, hue +4 so the lower green does not turn the
+ * skies lilac, and no sharpening over the halos already in the files. The
+ * copper beech (07) and the hydrangeas (10) also take the pink pass.
+ */
+const BASTIDE_GARDEN: Tune = {
+  saturation: 0.38,
+  green: [0.03, 0.92, 0.03],
+  linear: [0.86, 22],
+  hue: 4,
+  sharpen: 0,
+};
+
 const own: Own[] = [
   {
     slug: "villa-cap-fleuri",
@@ -188,7 +223,10 @@ const own: Own[] = [
     gallery: [
       // Round 2: the extract loses the neighbour's block on the left edge and
       // the paving below, and keeps the red cushions small.
-      p("01", "hero", [50, 45], "standard", "White columned villa with a stone stair, facing the sea", {
+      // Round 3: focal 50/0. The gable's peak sits a few pixels below the
+      // source's top edge, so every crop (1.62 and 4:5) keeps all of the top
+      // and loses the lower steps instead.
+      p("01", "hero", [50, 0], "standard", "White columned villa with a stone stair, facing the sea", {
         extract: [0.23, 0, 0.62, 0.72],
         tune: { ...NEUTRAL_SKY, ...SKY, ...CAP_FLEURI },
       }),
@@ -221,13 +259,35 @@ const own: Own[] = [
       // 68% of the source), so the frame is pines over the sea, without the
       // rail, the lawn or the black column. The page then runs pool,
       // rooms, bath and closes on the coast (11, cut above the parked cars).
+      // Round 3: the two contrails in the upper right sky and the utility
+      // pole, its lamp and wire at the bottom centre are retouched out
+      // (scripts/grade.mjs `retouch`, median healed).
       p("01", "hero", [45, 50], "strong", "Umbrella pines over the sea", {
         extract: [0, 0.02, 0.88, 0.66],
         tune: SKY,
+        patches: [
+          { to: [0.66, 0.1, 0.15, 0.12] },
+          { to: [0.76, 0.02, 0.15, 0.12] },
+          { to: [0.55, 0, 0.22, 0.1] },
+          { to: [0.294, 0.636, 0.042, 0.05] },
+          { to: [0.316, 0.636, 0.05, 0.046] },
+        ],
       }),
       p("03", "wide", [50, 50], "standard", "Pool between timber louvres"),
-      p("04", "portrait", [30, 50], "interior", "Dining room to the glass wall"),
-      p("05", "portrait", [50, 50], "interior", "Living room open to the garden"),
+      // Round 3: the brief's diptych again, 06 + 05, room and view. 06 is cut
+      // right of the television on its tripod (which ends at 51% of the
+      // width) and the crane jib behind the pines is healed out; both are
+      // cut to their centres, so the ceiling and the stretched wide-angle
+      // edges fall away. 04 (dining room) is dropped.
+      p("06", "portrait", [50, 65], "interior", "Bedroom opening to pines and sea", {
+        extract: [0.52, 0.15, 0.405, 0.8],
+        // The crane sits just behind a window mullion: cloned from the clear
+        // sky straight below it, so the mullion lines up through the patch.
+        patches: [{ from: [0.6, 0.402], to: [0.6, 0.348, 0.082, 0.046] }],
+      }),
+      p("05", "portrait", [50, 65], "interior", "Living room open to the garden", {
+        extract: [0.22, 0.22, 0.359, 0.71],
+      }),
       p("09", "detail", [45, 60], "interior", "Bath beneath a louvred window"),
       p("11", "wide", [50, 60], "strong", "The coast from above", { extract: [0.06, 0, 0.74, 0.6], tune: SKY }),
     ],
@@ -246,8 +306,10 @@ const own: Own[] = [
       }),
       // Round 2: the villa's upper floors and the hillside, not the aerial
       // with the neighbours either side.
+      // Round 3: left and down, so the larger cream house up the hill is cut
+      // to a sliver at the right edge and the frame is one house.
       p("01", "wide", [50, 50], "strong", "The villa on the hillside", {
-        extract: [0.24, 0.1, 0.54, 0.5],
+        extract: [0.14, 0.22, 0.56, 0.52],
         tune: NEUTRAL_SKY,
       }),
       p("07", "portrait", [50, 50], "interior", "Winter garden"),
@@ -264,15 +326,22 @@ const own: Own[] = [
     published: true,
     region: "mer",
     outlook: "Sea",
+    // Round 3: the deck hero has no building in it, so the index row shows
+    // the residence from the deck. Les Pins keeps its hero there: its only
+    // frames with the house in them (02, 03) are its loudest.
+    indexFrame: { file: "07", focal: [50, 50] },
     gallery: [
-      // Round 2: the residence second, so three pool and sea frames never
-      // run together; 05 closes, cut to the right two thirds without the
-      // sun's glare.
+      // 05 is cut to the right two thirds without the sun's glare.
+      // Round 3: the coastline second and the residence last, so the deck
+      // frames (01, 02, 07) never run three in a row. 08 is cut to its
+      // centre: the window and the foot of the bed, not the ceiling.
       p("01", "hero", [50, 45], "strong", "Deck, one lounger, the horizon", { tune: SKY }),
-      p("07", "wide", [50, 50], "strong", "The residence from the deck"),
-      p("02", "portrait", [50, 50], "strong", "Pool edge and sea"),
-      p("08", "portrait", [50, 50], "interior", "Bedroom with a tall window"),
       p("05", "wide", [50, 55], "strong", "Coastline from the terrace", { extract: [0.33, 0.28, 0.67, 0.72] }),
+      p("02", "portrait", [50, 50], "strong", "Pool edge and sea"),
+      p("08", "portrait", [50, 65], "interior", "Bedroom with a tall window", {
+        extract: [0.36, 0.18, 0.405, 0.8],
+      }),
+      p("07", "wide", [50, 50], "strong", "The residence from the deck"),
     ],
   },
   {
@@ -285,10 +354,19 @@ const own: Own[] = [
     gallery: [
       // Focal 50/0: the 1.62 crop takes its 7% from the bottom, with the pool.
       // The sky pass at .75 so the cream facade below it is not lifted too.
-      p("05", "hero", [50, 0], "strong", "Cream Belle Époque facade", { tune: { sky: 0.75 } }),
+      // Round 3: cut above the pool's edge and right of the palm frond, so
+      // neither the cyan strip nor the frond reaches the frame.
+      p("05", "hero", [50, 0], "strong", "Cream Belle Époque facade", {
+        extract: [0.05, 0, 0.95, 0.9],
+        tune: { sky: 0.75 },
+      }),
       p("01", "wide", [50, 40], "strong", "The villa among the pines from above"),
       p("10", "portrait", [50, 45], "strong", "Entrance stair under plane trees"),
-      p("07", "portrait", [40, 50], "strong", "Stone wall beneath a single pine"),
+      // Round 3: the neutral sky, a warmer red row and a light sky pass, so
+      // its sky and stone print with the warm stair of 10 beside it.
+      p("07", "portrait", [40, 50], "strong", "Stone wall beneath a single pine", {
+        tune: { hue: 4, red: [1.02, 0.07, 0.01], sky: 0.6 },
+      }),
       p("04", "wide", [50, 50], "strong", "The sea through stone pines"),
     ],
   },
@@ -338,11 +416,11 @@ const own: Own[] = [
         tune: { red: [0.98, 0.03, 0], blue: [0.02, 0.07, 0.94] },
       }),
       p("04", "portrait", [50, 50], "interior", "Bedroom in linen", { tune: BASTIDE_WALLS }),
-      p("08", "detail", [50, 50], "warm", "Stone basin"),
-      p("07", "wide", [50, 50], "warm", "Allée under the trees"),
-      p("10", "portrait", [50, 50], "warm", "Table under the plane tree"),
+      p("08", "detail", [50, 50], "warm", "Stone basin", { tune: BASTIDE_GARDEN }),
+      p("07", "wide", [50, 50], "warm", "Allée under the trees", { tune: { ...BASTIDE_GARDEN, pink: 0.8 } }),
+      p("10", "portrait", [50, 50], "warm", "Table under the plane tree", { tune: { ...BASTIDE_GARDEN, pink: 0.8 } }),
       p("02", "portrait", [50, 50], "warm", "Shuttered facade"),
-      p("12", "wide", [50, 50], "warm", "The estate from above"),
+      p("12", "wide", [50, 50], "warm", "The estate from above", { tune: BASTIDE_GARDEN }),
     ],
   },
   {
@@ -360,7 +438,11 @@ const own: Own[] = [
         extract: [0.15, 0.15, 0.7, 0.7],
         tune: VIGNES_WALLS,
       }),
-      p("06", "portrait", [50, 50], "interior", "Beams and stone floor", { tune: VIGNES_WALLS }),
+      // Round 3: cut to the table, the garden door and the first beams.
+      p("06", "portrait", [50, 65], "interior", "Beams and stone floor", {
+        extract: [0.2, 0.2, 0.396, 0.78],
+        tune: VIGNES_WALLS,
+      }),
       p("07", "portrait", [50, 50], "interior", "Bedroom to the garden", { tune: VIGNES_WALLS }),
       p("03", "wide", [50, 50], "garden", "The house among the pines"),
     ],
@@ -375,9 +457,21 @@ const own: Own[] = [
     gallery: [
       // Round 2: `standard` (strong turned the vines mustard) with the sky pass.
       p("01", "hero", [50, 50], "standard", "The house in the hills", { tune: SKY }),
-      p("05", "wide", [50, 50], "interior", "Living room open to the garden", { tune: COLLINES_WALLS }),
-      p("06", "portrait", [50, 50], "interior", "Dining room", { tune: COLLINES_WALLS }),
-      p("07", "portrait", [75, 50], "interior", "Bedroom over the pool", { tune: COLLINES_WALLS }),
+      // Round 3: the three interiors are cut to their centres, so the empty
+      // ceiling and the stretched wide-angle edges fall away and the
+      // furniture and the view carry each frame.
+      p("05", "wide", [50, 50], "interior", "Living room open to the garden", {
+        extract: [0.12, 0.22, 0.7, 0.72],
+        tune: COLLINES_WALLS,
+      }),
+      p("06", "portrait", [50, 65], "interior", "Dining room", {
+        extract: [0.33, 0.2, 0.334, 0.78],
+        tune: COLLINES_WALLS,
+      }),
+      p("07", "portrait", [50, 65], "interior", "Bedroom over the pool", {
+        extract: [0.5, 0.2, 0.342, 0.8],
+        tune: COLLINES_WALLS,
+      }),
       // Agapanthus on the stone wall, not the whole facade.
       p("09", "detail", [50, 50], "standard", "Agapanthus on a stone wall", { extract: [0.12, 0.44, 0.22, 0.49] }),
       p("10", "wide", [50, 40], "standard", "Pines to the distant sea"),
@@ -425,6 +519,7 @@ export const estates: Estate[] = own.map((o) => {
     sourceAgency: curl(s.source_agency),
     agencyRef: s.ref,
     gallery: o.gallery,
+    indexFrame: o.indexFrame,
   };
 });
 

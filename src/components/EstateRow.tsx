@@ -2,11 +2,12 @@ import Link from "next/link";
 import { Frame } from "./Frame";
 import { TextLink } from "./TextLink";
 import { copy } from "@/lib/copy";
-import { heroOf, priceDisplay, specLine, srcOf, type Estate } from "@/lib/estates";
+import { indexPhotoOf, priceDisplay, specLine, srcOf, type Estate } from "@/lib/estates";
 import styles from "./EstateRow.module.css";
 
 /**
- * One zigzag row of the Estates index (brief 6.2.5). The house's hero, wide
+ * One zigzag row of the Estates index (brief 6.2.5). The house's hero (or its
+ * round 3 `indexFrame`, where the hero shows no building), wide
  * (894 x 552 at 1440), and a 469px text column, top aligned: town, name, the
  * `short` sentence, the spec and price lines, and `VIEW THE HOUSE` pinned to
  * the bottom of the row above a hairline. `flip` puts the image on the right;
@@ -19,16 +20,16 @@ import styles from "./EstateRow.module.css";
  * and the accessibility tree so the row carries one link, not two.
  */
 export function EstateRow({ estate, flip = false, eager = false }: { estate: Estate; flip?: boolean; eager?: boolean }) {
-  const hero = heroOf(estate);
+  const photo = indexPhotoOf(estate);
   const href = `/estates/${estate.slug}`;
 
   return (
     <article className={`${styles.row} ${flip ? styles.flip : ""}`}>
       <Link href={href} className={styles.media} tabIndex={-1} aria-hidden="true">
         <Frame
-          src={srcOf(estate, hero)}
-          alt={hero.alt}
-          focal={hero.focal}
+          src={srcOf(estate, photo)}
+          alt={photo.alt}
+          focal={photo.focal}
           ratio="wide"
           sizes="(min-width:1024px) 62vw, 100vw"
           eager={eager}

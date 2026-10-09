@@ -62,6 +62,12 @@
     column-gap: var(--text-gap);
   }
 
+}
+
+/* Round 3: the list splits into two columns from 1200px only. Between 1024
+   and 1200 each column was about 200px, so a 128px term left a value such as
+   `Waterfront Belle Epoque villa to restore` three lines deep. */
+@media (min-width: 1200px) {
   .list {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: repeat(var(--rows), auto);

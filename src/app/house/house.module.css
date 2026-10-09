@@ -32,12 +32,14 @@
   margin: 12px 0 0;
 }
 
-/* The blocks hang from the top of the portrait, like a caption page. */
+/* Round 3: the three blocks are short, so they sit centred on the
+   portrait's height rather than hanging from its top with half the column
+   left empty. */
 @media (min-width: 1024px) {
   .pair {
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     column-gap: var(--text-gap);
-    align-items: start;
+    align-items: center;
   }
   .blocks {
     width: 100%;

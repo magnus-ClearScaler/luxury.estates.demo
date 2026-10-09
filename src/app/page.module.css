@@ -37,7 +37,10 @@
 }
 
 /* Round 2: the band ends on paper before the linen footer, as every other
-   page does, so it reads as the page's one deeper band. */
+   page does, so it reads as the page's one deeper band. Round 3: a larger
+   rest below it, so the paper between the band and the linen footer reads as
+   a deliberate pause rather than a seam. */
 .bandWrap {
-  margin-block: var(--section);
+  margin-top: var(--section);
+  margin-bottom: clamp(96px, 11vw, 160px);
 }

@@ -6,10 +6,12 @@
   gap: var(--seq-gap, clamp(48px, 6.25vw, 96px));
 }
 
+/* Round 3: under 768px the pair stacks full width, 16px apart, so it reads
+   as two prints kept together rather than two 171px thumbnails. */
 .diptych {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--gutter);
+  grid-template-columns: 1fr;
+  gap: 16px;
 }
 
 .detail {
@@ -21,6 +23,7 @@
 
 @media (min-width: 768px) {
   .diptych {
+    grid-template-columns: 1fr 1fr;
     gap: var(--col-gap);
   }
 }

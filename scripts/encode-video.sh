@@ -1,51 +1,43 @@
 #!/usr/bin/env bash
-# Hero film (brief 7.3, owner round 1). Run once locally; the outputs in
-# public/video are committed, this is not a build step.
+# Hero film (brief 7.3, owner round 1, bosses round 3). Run once locally; the
+# outputs in public/video are committed, this is not a build step.
 #
-#   assets/originals/video/sea-surface-warm-dusk.mp4
-#     The Pexels original download of 33251147 (14166155_1920_1080_24fps.mp4,
-#     1920x1080, 24 fps, 30.125 s, about 4.9 Mbps, 18 MB). Round 1 replaced the
-#     earlier 3.3 Mbps copy. Pexels serves no rendition above 1080p for this
-#     clip (checked 2026-10-09: /download/video/33251147/ redirects to the
-#     1920x1080 file). The softness that remains is the clip's shallow depth
-#     of field, not compression.
-#     Round 2 (2026-10-09) checked again: the Pexels CDN has only
-#     14166155_1920_1080_24fps.mp4 for this clip; the 2560x1440 and 3840x2160
-#     names return 403 and /download/video/33251147/ still redirects to the
-#     1080p file. So the encodes are unchanged and the desktop film is framed
-#     at object-position 50% 30% instead (src/app/globals.css): the inset box
-#     is about 2.15:1 and that keeps the horizon and the in-focus middle band
-#     of the water, not the blurred foreground. sea-overcast-calm (34727351)
-#     was graded as an alternative for the owner to compare
-#     (docs/qa/r2/hero-film-options.jpg) but its water stays teal under the
-#     warm tune, so it is not deployed.
-#     The alternate sea-pale-horizon (4279371) exists at 2560x1440, but it is
-#     an aerial over a teal sea and would need a heavy grade to sit with the
-#     beige and silver set, so the dusk clip stays.
+#   assets/originals/video/sea-pale-horizon.mp4
+#     Round 3 (2026-10-09): Pexels 4279371, Luis Adolfo Burgos, the top
+#     rendition Pexels serves for it (4279371-uhd_3840_2160_30fps.mp4 by
+#     name, 2560 x 1440 in fact, 29.97 fps, 15.5 s, about 13.7 Mbps, 27 MB).
+#     It replaces sea-surface-warm-dusk (Pexels 33251147), the owner's one
+#     open ask from round 1: that clip is a macro of the sea surface with a
+#     shallow depth of field, only a mid band in focus, and Pexels has no
+#     rendition of it above 1920 x 1080 (/download/video/33251147/ redirects
+#     to the 1080p file; the 2560 and 3840 names return 403), so no encode
+#     could make it crisp at 1440. The aerial is sharp edge to edge. Its sea
+#     is teal, so it is graded hard (FILM_VF in scripts/grade.mjs: near
+#     monochrome, silver water, warm grey sky). The warm-dusk original stays
+#     in assets/originals/video, not deployed.
 #
-#   -> public/video/sea-surface-warm-dusk-1080.mp4   H.264 CRF 22, slow, tune film
-#      public/video/sea-surface-warm-dusk-720.mp4    H.264 CRF 26 (under 768px)
-#      public/video/sea-surface-warm-dusk-1080.webm  VP9 CRF 32
-#      public/video/sea-surface-warm-dusk-720.webm   VP9 CRF 36
-#      public/video/sea-surface-warm-dusk-poster.jpg via scripts/grade.mjs
+#   -> public/video/sea-pale-horizon-1080.mp4   H.264 CRF 24 (brief 7.3), slow, tune film
+#      public/video/sea-pale-horizon-720.mp4    H.264 CRF 26 (under 768px)
+#      public/video/sea-pale-horizon-1080.webm  VP9 CRF 33
+#      public/video/sea-pale-horizon-720.webm   VP9 CRF 37
+#      public/video/sea-pale-horizon-poster.jpg via scripts/grade.mjs, 2400px
 #
-# The loop join is dissolved over 1 s: the first second of the clip is faded
-# in over the last second of the rest, so the file ends on the frame it starts
-# from (29.125 s). Audio stripped. The film gets the same light touch as the
-# `soft` photo preset (saturation .9, values x .969 + 8) so the poster, which
-# scripts/grade.mjs grades `soft`, does not shift when the video fades in.
+# Both sizes are downscaled (lanczos) from the 2560 x 1440 master, which is
+# what makes the 1080p file crisp. The loop join is dissolved over 1 s: the
+# first second of the clip is faded in over the last second of the rest, so
+# the file ends on the frame it starts from. Audio stripped.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-SRC=assets/originals/video/sea-surface-warm-dusk.mp4
+NAME=$(node --no-warnings -e 'import("./scripts/grade.mjs").then((m) => console.log(m.FILM_NAME))')
+GRADE=$(node --no-warnings -e 'import("./scripts/grade.mjs").then((m) => console.log(m.FILM_VF))')
+SRC=assets/originals/video/$NAME.mp4
 OUT=public/video
-NAME=sea-surface-warm-dusk
 mkdir -p "$OUT"
 
 DUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$SRC")
 OFFSET=$(awk -v d="$DUR" 'BEGIN { printf "%.3f", d - 2 }')
 
-GRADE="eq=saturation=0.9,lutrgb=r='clip(val*0.969+8,0,255)':g='clip(val*0.969+8,0,255)':b='clip(val*0.969+8,0,255)'"
 LOOP="[0:v]${GRADE},split[a][b];[a]trim=start=1,setpts=PTS-STARTPTS[body];[b]trim=end=1,setpts=PTS-STARTPTS[head];[body][head]xfade=transition=fade:duration=1:offset=${OFFSET},format=yuv420p"
 
 MASTER=$(mktemp -t aubemar-film).mkv
@@ -54,13 +46,15 @@ ffmpeg -y -loglevel error -i "$SRC" -filter_complex "$LOOP" -an -c:v libx264 -pr
 
 X264=(-an -c:v libx264 -preset slow -tune film -profile:v high -pix_fmt yuv420p -movflags +faststart)
 VP9=(-an -c:v libvpx-vp9 -b:v 0 -row-mt 1 -deadline good -cpu-used 1 -pix_fmt yuv420p)
+S1080="scale=-2:1080:flags=lanczos"
+S720="scale=-2:720:flags=lanczos"
 
-ffmpeg -y -loglevel error -i "$MASTER" "${X264[@]}" -crf 22 "$OUT/$NAME-1080.mp4"
-ffmpeg -y -loglevel error -i "$MASTER" -vf "scale=-2:720:flags=lanczos" "${X264[@]}" -crf 26 "$OUT/$NAME-720.mp4"
-ffmpeg -y -loglevel error -i "$MASTER" "${VP9[@]}" -crf 32 "$OUT/$NAME-1080.webm"
-ffmpeg -y -loglevel error -i "$MASTER" -vf "scale=-2:720:flags=lanczos" "${VP9[@]}" -crf 36 "$OUT/$NAME-720.webm"
+ffmpeg -y -loglevel error -i "$MASTER" -vf "$S1080" "${X264[@]}" -crf 24 "$OUT/$NAME-1080.mp4"
+ffmpeg -y -loglevel error -i "$MASTER" -vf "$S720" "${X264[@]}" -crf 26 "$OUT/$NAME-720.mp4"
+ffmpeg -y -loglevel error -i "$MASTER" -vf "$S1080" "${VP9[@]}" -crf 33 "$OUT/$NAME-1080.webm"
+ffmpeg -y -loglevel error -i "$MASTER" -vf "$S720" "${VP9[@]}" -crf 37 "$OUT/$NAME-720.webm"
 
-# Poster: a lossless PNG frame at 2 s, graded `soft`, light unsharp, q90.
+# Poster: the loop's first frame at full size, graded by FILM_VF, 2400px, q90.
 node --no-warnings scripts/grade.mjs --only poster
 
 ls -la "$OUT"

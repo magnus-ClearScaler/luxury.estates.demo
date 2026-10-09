@@ -8,10 +8,10 @@
  *
  * Reads   assets/originals/listings/<source slug>/NN.jpg
  *         assets/originals/atmosphere/<name>.jpg
- *         assets/originals/video/sea-surface-warm-dusk.mp4 (poster frame, via ffmpeg)
+ *         assets/originals/video/sea-pale-horizon.mp4 (poster frame, via ffmpeg)
  * Writes  public/estates/<slug>/NN.jpg       only the frames in brief 7.1
  *         public/atmosphere/<name>.jpg        only the slots in brief 7.2
- *         public/video/sea-surface-warm-dusk-poster.jpg   graded `soft`
+ *         public/video/sea-pale-horizon-poster.jpg   graded by FILM_VF (round 3)
  *         public/grain.png                    256px monochrome noise tile
  *
  * Every image: rotate, fit inside 2400 x 2400 (2400px long edge, never
@@ -31,6 +31,12 @@
  *   strong    sat .50 bri 1.01 hue -4     .86, 22    [.95,.10,.05]  [.02,.96,.02]  [.07,.14,.70]          1.05   yes
  *   warm      sat .48 bri 1.02            .90, 16    [.98,.06,.02]  [.02,.94,.02]  [.05,.11,.78]          1.04   yes
  *   interior  sat .70 bri 1.05            .95, 14    [.995,.035,0]  [.01,.98,.01]  [.02,.06,.90]          1.10   yes
+ *
+ * Round 3 changes (per image, in src/data): `patches` retouch (median heal
+ * or clone) for the Les Pins contrails, pole and crane; `tune.sharpen` 0 and
+ * `tune.pink` (a magenta and maroon pass) for the Bastide garden frames;
+ * centre extracts for the wide-angle interiors. The film poster takes the
+ * film's own ffmpeg grade (FILM_VF) through the identity `film` preset.
  *
  * Round 2 changes:
  * - interior (every interior frame): the standard / strong red rows sum to
@@ -63,6 +69,7 @@
  *   domaine-des-vignes-saint-tropez/01 156,160,174  ->  215,211,202
  *   maison-des-collines-ramatuelle/01  229,222,212  ->  216,212,203
  *   les-pins-eze/11 (closing wide)     201,198,191  ->  216,212,203
+ *   villa-blanche-cap-dantibes/07      149,147,153  ->  185,182,179  (round 3, strength .6, diptych with 10)
  * Villa Blanche runs at .75 so its cream facade, inside the mask, is not
  * lifted with the sky; Mas Blanc's sky is mostly pine canopy, so its mask
  * carries less weight.
@@ -76,8 +83,8 @@
  *            sky originals that went lilac take hue +3 and a red row of
  *            [.99,.06,.01]; the stone pine's white sky is held near chalk).
  *   quality  JPEG quality for an atmosphere file (the sailboat is q88).
- * The film poster is graded `soft` with sharpen sigma .6 at q90 (round 1: the
- * q84 poster was soft and blocky at 1440).
+ * The film poster is graded by FILM_VF, the film's own ffmpeg grade, with
+ * sharpen sigma .5 at q90 (round 3; see `poster()`).
  *
  * Brief starting values: standard sat .78 bri 1.03 linear .9,16 recomb
  * [1.03,.02,-.01] [.01,.99,0] [-.02,.01,.93]; strong sat .68 bri 1.04 linear
@@ -176,6 +183,14 @@ export const PRESETS = {
   },
 };
 
+/** Identity, for the film poster: graded in ffmpeg by FILM_VF already. */
+PRESETS.film = {
+  modulate: { saturation: 1, brightness: 1 },
+  linear: [1, 0],
+  recomb: null,
+  gamma: 1,
+};
+
 /** The one sky every hero is pulled to (round 2): a warm grey, #D8D4CB. */
 export const SKY_TARGET = [0xd8, 0xd4, 0xcb];
 
@@ -204,7 +219,8 @@ function tuned(p, tune = {}) {
   }
   const cyan = tune.cyan ?? p.cyan ?? false;
   const sky = tune.sky === true ? 1 : typeof tune.sky === "number" ? tune.sky : 0;
-  return { ...p, modulate, linear, recomb, cyan, sky };
+  const pink = tune.pink ?? 0;
+  return { ...p, modulate, linear, recomb, cyan, sky, pink };
 }
 
 /** Output gamma, x ^ (1/g), in place. */
@@ -252,6 +268,52 @@ function cyanPass({ data, info }) {
     const s2 = s * (1 - w * 0.85);
     const h2 = h + pull * (150 - h);
     // HSV back to RGB at the same value.
+    const v = max;
+    const C = v * s2;
+    const hp = h2 / 60;
+    const X = C * (1 - Math.abs((hp % 2) - 1));
+    let rr = 0, gg = 0, bb = 0;
+    if (hp < 1) [rr, gg, bb] = [C, X, 0];
+    else if (hp < 2) [rr, gg, bb] = [X, C, 0];
+    else if (hp < 3) [rr, gg, bb] = [0, C, X];
+    else if (hp < 4) [rr, gg, bb] = [0, X, C];
+    else if (hp < 5) [rr, gg, bb] = [X, 0, C];
+    else [rr, gg, bb] = [C, 0, X];
+    const m = v - C;
+    data[o] = Math.round((rr + m) * 255);
+    data[o + 1] = Math.round((gg + m) * 255);
+    data[o + 2] = Math.round((bb + m) * 255);
+  }
+}
+
+/**
+ * Round 3 pink pass (`tune.pink`, strength 0 to 1): pixels of hue 300 to 360
+ * and 0 to 15 degrees (magenta, pink, the copper beech's maroon) lose up to
+ * `strength` of their saturation and are pulled towards 20 degrees, a dusty
+ * rose. Feathered at both ends so skin of stone and terracotta are left alone.
+ */
+function pinkPass({ data, info }, strength) {
+  const n = info.width * info.height;
+  const c = info.channels;
+  for (let i = 0; i < n; i++) {
+    const o = i * c;
+    const r = data[o] / 255, g = data[o + 1] / 255, b = data[o + 2] / 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const d = max - min;
+    if (max === 0 || d === 0) continue;
+    const s = d / max;
+    let h;
+    if (max === r) h = 60 * (((g - b) / d) % 6);
+    else if (max === g) h = 60 * ((b - r) / d + 2);
+    else h = 60 * ((r - g) / d + 4);
+    if (h < 0) h += 360;
+    // Distance into the pink band, measured around 0 degrees.
+    const hh = h > 180 ? h - 360 : h; // -180..180, pink is -60..15
+    const w = Math.min(smooth(-70, -55, hh), 1 - smooth(10, 22, hh)) * smooth(0.12, 0.25, s) * strength;
+    if (w <= 0) continue;
+    const s2 = s * (1 - w * 0.8);
+    let h2 = hh + w * (20 - hh) * 0.6;
+    if (h2 < 0) h2 += 360;
     const v = max;
     const C = v * s2;
     const hp = h2 / 60;
@@ -345,9 +407,52 @@ function skyPass(img, strength) {
   return { before: graded, after: skyMean(img) };
 }
 
-/** An oriented sharp pipeline, cut to `extract` (fractions of the source) when given. */
-async function source(input, extract) {
-  const img = sharp(input).rotate();
+/**
+ * Round 3 retouch. Each patch covers a blemish (`to`, `[left, top, width,
+ * height]` as fractions of the oriented source) with a feathered edge so no
+ * seam shows. With `from` (a top left corner) it copies that clean area of the
+ * source over the blemish; without it, it lays a median-filtered copy of the
+ * source over it, which takes out a thin line (a contrail, a crane jib, a
+ * wire) and keeps the smooth sky around it. Runs before `extract`.
+ */
+async function retouch(r, patches) {
+  const { data, info } = r;
+  const { width: W, height: H, channels: c } = info;
+  const src = Buffer.from(data);
+  let healed = null;
+  if (patches.some((p) => !p.from)) {
+    healed = (await raw(fromRaw({ data: src, info }).median(35))).data;
+  }
+  for (const { from, to } of patches) {
+    const dx = Math.round(to[0] * W), dy = Math.round(to[1] * H);
+    const pw = Math.round(to[2] * W), ph = Math.round(to[3] * H);
+    const sx = from ? Math.round(from[0] * W) : dx, sy = from ? Math.round(from[1] * H) : dy;
+    const pool = from ? src : healed;
+    const f = Math.max(2, Math.round(Math.min(pw, ph) * 0.25));
+    for (let y = 0; y < ph; y++) {
+      for (let x = 0; x < pw; x++) {
+        const tx = dx + x, ty = dy + y, fx = sx + x, fy = sy + y;
+        if (tx < 0 || ty < 0 || tx >= W || ty >= H || fx < 0 || fy < 0 || fx >= W || fy >= H) continue;
+        const edge = Math.min(x, y, pw - 1 - x, ph - 1 - y);
+        const a = smooth(0, f, edge);
+        const o = (ty * W + tx) * c, so = (fy * W + fx) * c;
+        for (let ch = 0; ch < 3; ch++) data[o + ch] = Math.round(data[o + ch] * (1 - a) + pool[so + ch] * a);
+      }
+    }
+  }
+}
+
+/**
+ * An oriented sharp pipeline, retouched by `patches` and cut to `extract`
+ * (fractions of the source) when given.
+ */
+async function source(input, extract, patches) {
+  let img = sharp(input).rotate();
+  if (patches?.length) {
+    const r = await raw(img.removeAlpha().toColourspace("srgb"));
+    await retouch(r, patches);
+    img = fromRaw(r);
+  }
   if (!extract) return img;
   const meta = await sharp(input).metadata();
   const swap = (meta.orientation ?? 1) >= 5;
@@ -375,7 +480,7 @@ export async function gradeFile(input, out, presetName, opts = {}) {
 
   // Pass 1: orient, cut, size, modulate (sharp runs modulate after resize).
   let img = await raw(
-    (await source(input, opts.extract))
+    (await source(input, opts.extract, opts.patches))
       .resize({ width: LONG_EDGE, height: LONG_EDGE, fit: "inside", withoutEnlargement: true })
       .removeAlpha()
       .toColourspace("srgb")
@@ -391,14 +496,18 @@ export async function gradeFile(input, out, presetName, opts = {}) {
   // one, sharp darkens instead, so it is no longer left to sharp), then the
   // round 2 cyan pass and sky pass.
   let sky = null;
-  if (p.gamma !== 1 || p.cyan || p.sky > 0) {
+  if (p.gamma !== 1 || p.cyan || p.sky > 0 || p.pink > 0) {
     img = await raw(last);
     if (p.gamma !== 1) gammaPass(img, p.gamma);
     if (p.cyan) cyanPass(img);
+    if (p.pink > 0) pinkPass(img, p.pink);
     if (p.sky > 0) sky = skyPass(img, p.sky);
     last = fromRaw(img);
   }
-  last = last.sharpen({ sigma: opts.sharpen ?? 0.4 });
+  // Round 3: `tune.sharpen` 0 leaves an image unsharpened (the Bastide
+  // garden frames, whose HDR foliage already carries halos).
+  const sigma = opts.tune?.sharpen ?? opts.sharpen ?? 0.4;
+  if (sigma > 0) last = last.sharpen({ sigma });
 
   mkdirSync(dirname(out), { recursive: true });
   await last.jpeg({ quality: opts.quality ?? 84, mozjpeg: true }).toFile(out);
@@ -415,7 +524,7 @@ function jobs() {
         input: join(ORIG, "listings", e.sourceSlug, `${ph.file}.jpg`),
         out: join(PUB, "estates", e.slug, `${ph.file}.jpg`),
         preset: ph.grade,
-        opts: { extract: ph.extract, tune: ph.tune },
+        opts: { extract: ph.extract, tune: ph.tune, patches: ph.patches },
       });
     }
   }
@@ -431,12 +540,36 @@ function jobs() {
   return list;
 }
 
+/**
+ * The hero film's grade (round 3), shared with scripts/encode-video.sh, which
+ * reads it from here so the poster and the film cannot drift apart. The clip
+ * (Pexels 4279371, 2560 x 1440) is an aerial over a teal sea under a white
+ * sky. Saturation goes to .08, then per-channel curves split-tone it: the
+ * water to a cool silver (#7C8082 to #A8AAA9 from the shallows to the
+ * horizon) and the sky to a warm grey (#DAD4C8, near SKY_TARGET), so it sits
+ * with the sailboat and the paper. Contrast is held low, as dawn light.
+ */
+export const FILM_NAME = "sea-pale-horizon";
+export const FILM_VF = [
+  "hue=s=0.08",
+  "curves=" +
+    "r='0/0.12 0.333/0.486 0.475/0.58 0.604/0.659 0.8/0.812 0.875/0.855 1/0.93':" +
+    "g='0/0.13 0.333/0.502 0.475/0.593 0.604/0.667 0.8/0.792 0.875/0.831 1/0.91':" +
+    "b='0/0.14 0.333/0.51 0.475/0.596 0.604/0.663 0.8/0.753 0.875/0.784 1/0.87'",
+].join(",");
+
+/**
+ * Poster (round 3): the first frame the loop plays (1 s into the source, as
+ * the encode trims the first second for the loop dissolve), from the full
+ * 2560 x 1440 source through FILM_VF, then 2400px wide, sharpen .5, q90.
+ * No photo preset on top: the film's own grade is the grade.
+ */
 async function poster() {
-  const film = join(ORIG, "video", "sea-surface-warm-dusk.mp4");
+  const film = join(ORIG, "video", `${FILM_NAME}.mp4`);
   const frame = join(tmpdir(), "aubemar-poster-frame.png");
-  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-ss", "2", "-i", film, "-frames:v", "1", frame]);
-  await gradeFile(frame, join(PUB, "video", "sea-surface-warm-dusk-poster.jpg"), "soft", {
-    sharpen: 0.6,
+  execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-ss", "1", "-i", film, "-vf", FILM_VF, "-frames:v", "1", frame]);
+  await gradeFile(frame, join(PUB, "video", `${FILM_NAME}-poster.jpg`), "film", {
+    sharpen: 0.5,
     quality: 90,
   });
   rmSync(frame, { force: true });

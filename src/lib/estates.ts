@@ -82,6 +82,18 @@ export function heroOf(e: Estate): Photo {
   return h;
 }
 
+/**
+ * The photograph on the /estates row: the house's `indexFrame` where it has
+ * one (round 3: a hero with no building in it), otherwise the hero.
+ */
+export function indexPhotoOf(e: Estate): Photo {
+  if (!e.indexFrame) return heroOf(e);
+  const { file, focal } = e.indexFrame;
+  const p = e.gallery.find((x) => x.file === file);
+  if (!p) throw new Error(`Index frame ${file} not in the gallery of ${e.slug}`);
+  return { ...p, focal };
+}
+
 /** The sequence after the hero, in order, each with its own frame. */
 export function sequenceOf(e: Estate): Photo[] {
   return e.gallery.filter((p) => p.frame !== "hero");

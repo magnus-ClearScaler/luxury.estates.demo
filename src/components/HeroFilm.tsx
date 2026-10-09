@@ -8,10 +8,11 @@ import { film } from "@/data/atmosphere";
  * The home hero film (brief 6.1.1 and 9), ported from
  * ~/get-work-abroad/components/home/HeroVideo.tsx.
  *
- * Layout is built in: desktop inset at the gutter, about 72vh tall, 65px
- * below the header, framed at 50/30 (round 2: the source is 1080p with a
- * shallow focus, so the crop keeps the sharp middle band and the horizon);
- * mobile edge to edge directly below the header, 4:5, framed at 50/60.
+ * Layout is built in: desktop inset at the gutter, about 72vh tall (never
+ * more than the screen less 300px), 32px below the header, framed at 50/35
+ * (round 3: the 2560 x 1440 aerial `sea-pale-horizon`, horizon at about two
+ * fifths of the box); mobile edge to edge directly below the header, 4:5,
+ * framed at 50/60.
  * Nothing is written on it.
  *
  * - The graded poster is the first paint and the LCP: next/image, preload,
