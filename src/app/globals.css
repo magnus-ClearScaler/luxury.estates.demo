@@ -1,8 +1,20 @@
 @import "tailwindcss";
 
+/* Newsreader's fallback while the font loads: the face next/font/google
+   generated for it, kept as it was when the font moved to next/font/local
+   (layout.tsx). */
+@font-face {
+  font-family: "Newsreader Fallback";
+  src: local("Times New Roman");
+  ascent-override: 69.68%;
+  descent-override: 25.12%;
+  line-gap-override: 0%;
+  size-adjust: 105.48%;
+}
+
 /* Brief 3: tokens. No white, no black, no accent. */
 :root {
-  --chalk: #fbf9f5; /* header once scrolled, menu drawer, enquiry panel, gate page */
+  --chalk: #fbf9f5; /* header once scrolled, menu drawer, enquiry panel */
   --paper: #f6f2eb; /* page ground on every page; reversed text on the solid button */
   --linen: #ede6da; /* the one deeper band per page, and the footer */
   --sand: #e2d8c9; /* image placeholders, ::selection */
@@ -305,7 +317,7 @@ button {
 }
 
 /* ---------- Buttons ---------- */
-/* Solid: Send only. Outline: the gate's Enter only. */
+/* Solid: Send only. Outline: no current user (it was the gate's Enter). */
 .btn-solid,
 .btn-outline {
   display: inline-flex;
@@ -356,12 +368,24 @@ button {
 .frame > img {
   object-fit: cover;
 }
+/* Starts at 1%, not 0: invisible over sand, but Chrome counts the photograph
+   as painted when it loads rather than at the end of the fade (LCP). */
 .js .frame > img {
-  opacity: 0;
+  opacity: 0.01;
   transition: opacity 600ms ease-in-out;
 }
 .js .frame > img[data-loaded="true"] {
   opacity: 1;
+}
+/* Without JavaScript the deferred image never gets a source; the <noscript>
+   copy beside it shows instead. */
+html:not(.js) .frame > img[data-defer] {
+  display: none;
+}
+/* Until it has a source, keep its alt text from showing (reduced motion has
+   no fade to hide it). */
+.frame > img:not([src]) {
+  visibility: hidden;
 }
 
 /* ---------- Form (brief 6.5) ---------- */
@@ -443,7 +467,7 @@ select.input option {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image: url("/grain.png");
+  background-image: url("/grain-v2.png");
   background-size: 256px 256px;
   opacity: 0.035;
 }

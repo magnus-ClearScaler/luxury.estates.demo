@@ -4,9 +4,10 @@ import { TextLink } from "@/components/TextLink";
 import { atmosphere } from "@/data/atmosphere";
 import { copy } from "@/lib/copy";
 import { countWord } from "@/lib/estates";
+import { pageMeta } from "@/lib/seo";
 import styles from "./house.module.css";
 
-export const metadata: Metadata = { title: copy.house.title };
+export const metadata: Metadata = pageMeta({ path: "/house", ...copy.meta.house });
 
 /** The House (brief 6.4). No portraits, names, founding year or team. */
 export default function HousePage() {
@@ -23,7 +24,7 @@ export default function HousePage() {
       </header>
 
       <div className={`container-x ${styles.wide}`}>
-        <Frame src={wide.src} alt={wide.alt} focal={wide.focal} ratio="wide" sizes="100vw" eager />
+        <Frame src={wide.src} alt={wide.alt} focal={wide.focal} ratio="wide" sizes="100vw" preload />
       </div>
 
       <div className={`container-x ${styles.pair}`}>

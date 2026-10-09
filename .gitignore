@@ -18,3 +18,7 @@
 *.tsbuildinfo
 next-env.d.ts
 npm-debug.log*
+
+# Lighthouse reports and QA screenshots stay local
+/docs/lh/
+/docs/qa/

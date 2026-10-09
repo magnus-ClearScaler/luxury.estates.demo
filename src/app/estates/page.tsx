@@ -3,9 +3,16 @@ import { EstateRow } from "@/components/EstateRow";
 import { TextLink } from "@/components/TextLink";
 import { copy, typo } from "@/lib/copy";
 import { countWord, published } from "@/lib/estates";
+import { estatesJsonLd } from "@/lib/jsonld";
+import { pageMeta } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 import styles from "./estates.module.css";
 
-export const metadata: Metadata = { title: copy.estates.title };
+export const metadata: Metadata = pageMeta({
+  path: "/estates",
+  title: copy.meta.estates.title,
+  description: copy.meta.estates.description(countWord()),
+});
 
 /**
  * Keeps `Saint-Tropez peninsula` on one line, so the heading never breaks at
@@ -61,6 +68,7 @@ export default function EstatesPage() {
           <TextLink href={c.closingLink.href}>{c.closingLink.label}</TextLink>
         </p>
       </div>
+      <JsonLd data={estatesJsonLd()} />
     </div>
   );
 }

@@ -1,6 +1,10 @@
 import type { MetadataRoute } from "next";
+import { site } from "@/lib/site";
 
-/** Brief 11.5: disallow all, no sitemap. */
+/** Owner decision 2026-10-09: public and indexable. Allow all, point to the sitemap. */
 export default function robots(): MetadataRoute.Robots {
-  return { rules: { userAgent: "*", disallow: "/" } };
+  return {
+    rules: { userAgent: "*", allow: "/" },
+    sitemap: `${site.url}/sitemap.xml`,
+  };
 }

@@ -1,7 +1,6 @@
-"use client";
-
-import Image from "next/image";
-import { useState, type CSSProperties } from "react";
+import Image, { getImageProps } from "next/image";
+import type { CSSProperties } from "react";
+import { DeferredImg } from "./DeferredImg";
 
 /** Brief 5: the only image ratios on the site. */
 export const RATIOS = {
@@ -38,7 +37,9 @@ export type FrameProps = {
 /**
  * An aspect box on sand with a next/image inside it, covering, positioned from
  * the focal point. The image fades from the sand over 600ms once loaded (the
- * one entrance animation on the site; removed under reduced motion). Square,
+ * one entrance animation on the site; removed under reduced motion). The
+ * head script in layout.tsx sets `data-loaded` when the image loads, so the
+ * fade does not wait for hydration and this stays a server component. Square,
  * no border, no shadow, nothing written on it.
  */
 export function Frame({
@@ -54,28 +55,50 @@ export function Frame({
   className = "",
   style,
 }: FrameProps) {
-  const [loaded, setLoaded] = useState(false);
   const boxStyle = {
     "--ratio": RATIOS[ratio],
     ...(mobileRatio ? { "--ratio-mobile": RATIOS[mobileRatio] } : {}),
     ...style,
   } as CSSProperties;
 
+  const objectPosition = `${focal[0]}% ${focal[1]}%`;
+
+  if (eager || preload) {
+    return (
+      <div className={`frame ${className}`} style={boxStyle}>
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          sizes={sizes}
+          quality={quality}
+          preload={preload}
+          loading={preload ? undefined : "eager"}
+          fetchPriority={preload ? "high" : undefined}
+          style={{ objectPosition }}
+        />
+      </div>
+    );
+  }
+
+  // Below the fold: the request waits for window `load` (DeferredImg), with
+  // the plain image for visitors without JavaScript.
+  const { props } = getImageProps({
+    src,
+    alt,
+    fill: true,
+    sizes,
+    quality,
+    loading: "lazy",
+    style: { objectPosition },
+  });
   return (
     <div className={`frame ${className}`} style={boxStyle}>
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        sizes={sizes}
-        quality={quality}
-        preload={preload}
-        loading={preload ? undefined : eager ? "eager" : "lazy"}
-        fetchPriority={preload ? "high" : undefined}
-        style={{ objectPosition: `${focal[0]}% ${focal[1]}%` }}
-        data-loaded={loaded ? "true" : "false"}
-        onLoad={() => setLoaded(true)}
-      />
+      <DeferredImg {...props} />
+      <noscript>
+        {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
+        <img {...props} style={{ ...props.style, objectFit: "cover" }} />
+      </noscript>
     </div>
   );
 }

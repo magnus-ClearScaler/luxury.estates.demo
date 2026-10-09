@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Local Lighthouse and QA output and tools (gitignored).
+    "docs/lh/**",
+    "docs/qa/**",
   ]),
 ]);
 

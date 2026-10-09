@@ -123,3 +123,15 @@ const WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "E
 export function countWord(n: number = published().length): string {
   return WORDS[n] ?? String(n);
 }
+
+/**
+ * Meta description: the listing's own `short` sentence, then bedrooms and
+ * living area, then the price as shown. Land stays on the page.
+ */
+export function metaDescription(e: Estate): string {
+  const parts: string[] = [];
+  if (e.beds != null) parts.push(`${e.beds} bedrooms`);
+  if (e.living != null) parts.push(`${formatNumber(e.living)} m²`);
+  const spec = parts.length ? ` ${parts.join(", ")}.` : "";
+  return `${e.short}${spec} ${priceDisplay(e, "index")}.`;
+}

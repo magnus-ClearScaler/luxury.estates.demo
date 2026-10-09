@@ -16,8 +16,13 @@ export type EnquiryHouse = { slug: string; name: string };
 export type EnquiryFormProps = {
   /** The published houses (eleven) in index order (`published()` mapped to slug and name). */
   houses: readonly EnquiryHouse[];
-  /** Preselected house slug (from `?house=slug`, or the estate page). */
+  /** Preselected house slug (the estate page). */
   house?: string;
+  /**
+   * Preselect from `?house=slug` in the address, read in the browser so the
+   * /enquire page can stay static (no `searchParams` on the server).
+   */
+  houseFromQuery?: boolean;
   /** Prefilled message (the estate page's viewing line). */
   message?: string;
   className?: string;
@@ -30,12 +35,28 @@ const ORDER: RequiredField[] = ["firstName", "lastName", "email", "consent"];
  * fill, square. Posts to the server action, which validates and redirects to
  * /enquire/sent. Works without JavaScript (progressive enhancement).
  */
-export function EnquiryForm({ houses, house = "", message = "", className = "" }: EnquiryFormProps) {
+export function EnquiryForm({
+  houses,
+  house = "",
+  houseFromQuery = false,
+  message = "",
+  className = "",
+}: EnquiryFormProps) {
   const [state, action, pending] = useActionState(submitEnquiry, initialEnquiryState);
   const uid = useId();
   const formRef = useRef<HTMLFormElement>(null);
   const f = copy.enquire.form;
   const v = state.values;
+
+  // `?house=slug`: preselect a published house (or the "not shown here"
+  // option) once, unless a house is already chosen.
+  useEffect(() => {
+    if (!houseFromQuery) return;
+    const slug = new URLSearchParams(window.location.search).get("house") ?? "";
+    if (slug !== OTHER_HOUSE && !houses.some((h) => h.slug === slug)) return;
+    const select = formRef.current?.querySelector<HTMLSelectElement>('select[name="house"]');
+    if (select && select.value === "") select.value = slug;
+  }, [houseFromQuery, houses]);
 
   // After a failed attempt, move focus to the first field that needs attention.
   useEffect(() => {

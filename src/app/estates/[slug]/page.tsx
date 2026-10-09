@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EnquiryForm } from "@/components/EnquiryForm";
 import { Frame } from "@/components/Frame";
+import { JsonLd } from "@/components/JsonLd";
 import { Particulars } from "@/components/Particulars";
 import { Sequence } from "@/components/Sequence";
 import { TextLink } from "@/components/TextLink";
@@ -10,6 +11,7 @@ import { copy } from "@/lib/copy";
 import {
   bySlug,
   heroOf,
+  metaDescription,
   next,
   placeLine,
   priceDisplay,
@@ -18,6 +20,8 @@ import {
   specLine,
   srcOf,
 } from "@/lib/estates";
+import { estateJsonLd } from "@/lib/jsonld";
+import { pageMeta } from "@/lib/seo";
 import styles from "./estate.module.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -32,7 +36,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const e = bySlug(slug);
   if (!e) return {};
-  return { title: e.name, description: e.short };
+  return pageMeta({
+    path: `/estates/${e.slug}`,
+    title: copy.meta.estateTitle(e.name, e.town),
+    description: metaDescription(e),
+    ownImage: true,
+  });
 }
 
 /**
@@ -118,6 +127,7 @@ export default async function EstatePage({ params }: Props) {
         </p>
         <p className={`t-small c-taupe ${styles.credit}`}>{t.credit}</p>
       </div>
+      <JsonLd data={estateJsonLd(e)} />
     </article>
   );
 }

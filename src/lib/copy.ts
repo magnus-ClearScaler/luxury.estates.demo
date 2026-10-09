@@ -35,6 +35,33 @@ const raw = {
     titleDefault: NAME_DISPLAY,
     titleTemplate: `%s · ${NAME_DISPLAY}`,
     description: site.description,
+    home: {
+      /** Absolute: the template is not applied. */
+      title: `${NAME_DISPLAY} · Houses on the Côte d'Azur`,
+      description: (countWord: string) =>
+        `${countWord} houses on the Côte d'Azur, between Roquebrune and the Saint-Tropez peninsula, each held privately and shown by appointment in the morning.`,
+    },
+    estates: {
+      title: "Estates on the Côte d'Azur",
+      description: (countWord: string) =>
+        `${countWord} houses between Roquebrune and the Saint-Tropez peninsula, held privately and shown by appointment. Prices are given where the seller allows.`,
+    },
+    /** `Mas Blanc, Mougins` (the template adds ` · Aube’Mar`). */
+    estateTitle: (name: string, town: string) => `${name}, ${town}`,
+    house: {
+      title: "The House",
+      description: `${NAME_DISPLAY} is a small house of estate agents on the Côte d'Azur. We take on a few houses a year and show each one as it is.`,
+    },
+    enquire: {
+      title: "Enquire",
+      description:
+        "Write to us about a house on the Côte d'Azur, or about what you are looking for. Viewings are private and held in the morning.",
+    },
+    enquireSent: { title: "Thank you", description: "We will write back shortly." },
+    colophon: {
+      title: "Colophon",
+      description: `How ${NAME_DISPLAY} was made: the houses and the agencies that list them, the atmosphere photography and film, and the type.`,
+    },
   },
 
   skipLink: "Skip to content",
@@ -230,14 +257,6 @@ const raw = {
   notFound: {
     title: "This page is not here. The houses are.",
     link: { label: "THE ESTATES", href: "/estates" },
-  },
-
-  gate: {
-    title: "Private preview",
-    eyebrow: "PRIVATE PREVIEW",
-    password: "Password",
-    enter: "ENTER",
-    error: "Incorrect password.",
   },
 } as const;
 

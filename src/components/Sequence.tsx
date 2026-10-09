@@ -49,7 +49,7 @@ export function Sequence({ estate, photos }: { estate: Estate; photos: Photo[] }
                   alt={p.alt}
                   focal={p.focal}
                   ratio="portrait"
-                  sizes="50vw"
+                  sizes="(min-width:768px) 50vw, 100vw"
                 />
               ))}
             </div>

@@ -14,6 +14,9 @@ export const site = {
   clearscalerUrl: "https://clearscaler.com",
 } as const;
 
+/** Last content change, for the sitemap. Move it when the houses change. */
+export const UPDATED = new Date("2026-10-09");
+
 /** Drawer items, in order (brief 5.2). */
 export const nav = [
   { label: "Estates", href: "/estates" },

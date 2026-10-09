@@ -582,7 +582,7 @@ Form (`EnquiryForm`, a client component with a server action):
 
 `/atmosphere/sheer-curtain-window.jpg` as a portrait, then h2 `This page is not here. The houses are.` and link `THE ESTATES`.
 
-### 6.8 Gate page (served by `src/proxy.ts`)
+### 6.8 Gate page (served by `src/proxy.ts`; removed 2026-10-09, see 11.5)
 
 Chalk ground, `/atmosphere/terrace-sea-pale-morning.jpg` at 40% opacity behind a centred chalk panel 400px wide. In the panel: wordmark at 24px, eyebrow `PRIVATE PREVIEW`, a password input styled as in 6.5, an outline button `ENTER`, and on failure small `Incorrect password.` Inline CSS only, with the two fonts loaded from Google Fonts by `<link>`. No black box.
 
@@ -790,7 +790,7 @@ scripts/check-copy.mjs                            fails the build on U+2013 or U
 public/estates/<slug>/NN.jpg                      graded, generated
 public/atmosphere/*.jpg                           graded, generated
 public/video/sea-surface-warm-dusk-{1080,720}.{mp4,webm}, sea-surface-warm-dusk-poster.jpg
-public/grain.png                                  256px monochrome noise tile
+public/grain-v2.png                               256px monochrome noise tile
 src/app/layout.tsx                                fonts, metadata, skip link, data-scroll-behavior
 src/app/page.tsx
 src/app/estates/page.tsx
@@ -837,13 +837,15 @@ async headers() { return [
 
 Quality 90 on heroes, 85 elsewhere (`qualities` must be declared or Next 16 ignores them). `sizes`: `100vw` on heroes and wides, `(min-width:1024px) 66vw, 100vw` for the feature wide, `(min-width:1024px) 30vw, 100vw` for portraits, `(min-width:1024px) 440px, 100vw` for details. Eager loading only for the hero and the first row of each page.
 
-### 11.4 Password gate
+### 11.4 Password gate (removed 2026-10-09, see 11.5)
 - `src/proxy.ts` exporting `proxy`, ported from `~/structured-talent-demo/middleware.ts` (keeps `opengraph-image` open so link previews work). Password `120226`, cookie `demo-auth`, 30 days, httpOnly, `secure` when `NODE_ENV === "production"`, 303 on success, the gate page (6.8) otherwise.
 - Matcher: `['/((?!_next/static|_next/image|opengraph-image|icon|apple-icon|favicon\\.ico|.*\\..*).*)']`.
 - `DEMO_GATE=off` disables it. Default on.
 - Test the gate on a Vercel preview; the secure cookie will not stick on localhost.
 
 ### 11.5 Noindex: `metadata.robots = { index: false, follow: false }`, `robots.ts` disallow all, the `X-Robots-Tag` header. No sitemap. No JSON-LD.
+
+> Owner decision 2026-10-09: the site is public and indexable. The gate (6.8, 11.4) is removed with `src/proxy.ts`; `robots.ts` allows all and names the sitemap; the `X-Robots-Tag` header and `metadata.robots` are gone; `sitemap.ts`, per page canonicals and Open Graph (`src/lib/seo.ts`) and JSON-LD (`src/lib/jsonld.ts`, Organization, not RealEstateAgent; no Offer) are added. `/enquire/sent` is `noindex, follow`. Plan: `docs/lh/seo-plan.md` (local). The open risk on the listing photographs (sign-off, below) still stands.
 
 ### 11.6 Budgets: LCP under 2.0s on 4G on Home via the poster; Home JS under 350 KB; `public/` under 60 MB after the grade step; zero CLS from images.
 

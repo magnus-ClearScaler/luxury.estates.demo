@@ -6,9 +6,10 @@ import videos from "../../../data/video.json" with { type: "json" };
 import { atmosphereCredits, deployedAtmosphere, film } from "@/data/atmosphere";
 import { copy } from "@/lib/copy";
 import { published } from "@/lib/estates";
+import { pageMeta } from "@/lib/seo";
 import styles from "./colophon.module.css";
 
-export const metadata: Metadata = { title: copy.colophon.title };
+export const metadata: Metadata = pageMeta({ path: "/colophon", ...copy.meta.colophon });
 
 type Credit = { file: string; photographer_url: string; licence: string };
 type Video = { file: string; licence: string };

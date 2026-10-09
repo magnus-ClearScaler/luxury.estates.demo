@@ -3,9 +3,10 @@ import { Frame } from "@/components/Frame";
 import { TextLink } from "@/components/TextLink";
 import { atmosphere } from "@/data/atmosphere";
 import { copy } from "@/lib/copy";
+import { pageMeta } from "@/lib/seo";
 import styles from "../enquire.module.css";
 
-export const metadata: Metadata = { title: copy.enquire.title };
+export const metadata: Metadata = pageMeta({ path: "/enquire/sent", ...copy.meta.enquireSent, index: false });
 
 /** Confirmation after an enquiry (brief 6.5). */
 export default function SentPage() {

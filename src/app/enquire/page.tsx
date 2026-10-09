@@ -3,21 +3,17 @@ import { EnquiryForm } from "@/components/EnquiryForm";
 import { Frame } from "@/components/Frame";
 import { atmosphere } from "@/data/atmosphere";
 import { copy } from "@/lib/copy";
-import { indexOrder, published } from "@/lib/estates";
-import { OTHER_HOUSE } from "./fields";
+import { published } from "@/lib/estates";
+import { pageMeta } from "@/lib/seo";
 import styles from "./enquire.module.css";
 
-export const metadata: Metadata = { title: copy.enquire.title };
+export const metadata: Metadata = pageMeta({ path: "/enquire", ...copy.meta.enquire });
 
-/** Enquire (brief 6.5). `?house=slug` preselects the house. */
-export default async function EnquirePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-  const { house } = await searchParams;
-  const slug = typeof house === "string" ? house : "";
-  const preselect = indexOrder.includes(slug) || slug === OTHER_HOUSE ? slug : "";
+/**
+ * Enquire (brief 6.5). `?house=slug` preselects the house; the form reads it
+ * in the browser, so this page is static (fast first byte, no cold start).
+ */
+export default function EnquirePage() {
   const houses = published().map(({ slug, name }) => ({ slug, name }));
   const image = atmosphere.enquire;
   const c = copy.enquire;
@@ -30,7 +26,7 @@ export default async function EnquirePage({
       </header>
 
       <div className={styles.grid}>
-        <EnquiryForm houses={houses} house={preselect} />
+        <EnquiryForm houses={houses} houseFromQuery />
         <div className={styles.image}>
           <Frame
             src={image.src}

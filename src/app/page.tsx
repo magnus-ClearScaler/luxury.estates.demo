@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Band } from "@/components/Band";
 import { EstateCards } from "@/components/EstateCards";
 import { FeaturePair } from "@/components/FeaturePair";
@@ -5,8 +6,16 @@ import { Frame } from "@/components/Frame";
 import { HeroFilm } from "@/components/HeroFilm";
 import { TextLink } from "@/components/TextLink";
 import { copy } from "@/lib/copy";
-import { bySlug, photoSrc } from "@/lib/estates";
+import { bySlug, countWord, photoSrc } from "@/lib/estates";
+import { pageMeta } from "@/lib/seo";
 import s from "./page.module.css";
+
+export const metadata: Metadata = pageMeta({
+  path: "/",
+  title: copy.meta.home.title,
+  description: copy.meta.home.description(countWord()),
+  absoluteTitle: true,
+});
 
 /** An estate photograph for a Home slot: served path, focal, and the gallery alt. */
 function housePhoto(slot: { estate: string; file: string; focal: readonly [number, number] }) {

@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     // Next 16 ignores qualities that are not declared here.
     qualities: [75, 85, 90],
-    deviceSizes: [640, 828, 1080, 1440, 1920, 2400],
+    deviceSizes: [640, 750, 828, 1080, 1440, 1920, 2400],
     minimumCacheTTL: 31536000,
   },
   async headers() {
@@ -18,8 +18,8 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },
       {
-        source: "/:path*",
-        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+        source: "/grain-v2.png",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },
     ];
   },

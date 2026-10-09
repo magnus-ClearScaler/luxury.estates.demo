@@ -33,7 +33,7 @@ export function EstateRow({ estate, flip = false, eager = false }: { estate: Est
           focal={photo.focal}
           ratio="wide"
           sizes="(min-width:1024px) 62vw, 100vw"
-          eager={eager}
+          preload={eager}
         />
       </Link>
       <div className={styles.text}>

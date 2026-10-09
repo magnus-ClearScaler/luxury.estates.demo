@@ -12,7 +12,7 @@
  * Writes  public/estates/<slug>/NN.jpg       only the frames in brief 7.1
  *         public/atmosphere/<name>.jpg        only the slots in brief 7.2
  *         public/video/sea-pale-horizon-poster.jpg   graded by FILM_VF (round 3)
- *         public/grain.png                    256px monochrome noise tile
+ *         public/grain-v2.png                 256px monochrome noise tile
  *
  * Every image: rotate, fit inside 2400 x 2400 (2400px long edge, never
  * enlarged), then in this order modulate, linear, recomb, gamma, the cyan
@@ -699,9 +699,12 @@ async function grain() {
     const r = ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     buf[i] = Math.round(r * 255);
   }
+  // 16 grey levels: at 3.5% opacity one level is under 1/255 on screen, so the
+  // palette tile looks the same and weighs a third (Lighthouse pass, 2026-10).
   await sharp(buf, { raw: { width: size, height: size, channels: 1 } })
-    .png({ compressionLevel: 9 })
-    .toFile(join(PUB, "grain.png"));
+    .toColourspace("b-w")
+    .png({ palette: true, colours: 16, compressionLevel: 9 })
+    .toFile(join(PUB, "grain-v2.png"));
 }
 
 async function main() {
