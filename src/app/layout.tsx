@@ -1,38 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Jost } from "next/font/google";
-import localFont from "next/font/local";
+import { preload } from "react-dom";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { JsonLd } from "@/components/JsonLd";
 import { copy } from "@/lib/copy";
+import { headScript } from "@/lib/head-script";
 import { siteJsonLd } from "@/lib/jsonld";
 import { NAME_DISPLAY, site } from "@/lib/site";
 import "./globals.css";
 
-// Newsreader, the Google Fonts latin file (the one next/font/google served),
-// with the weight axis pinned to the two weights the site sets (300 and 400)
-// and the optical size axis kept whole, so the display cuts are unchanged.
-// 91 KB instead of 132 KB before first paint. Roman only: nothing is set in
-// italic. Regenerate with fontTools:
-//   python3 -m fontTools.varLib.instancer <latin roman>.woff2 wght=300:400
-const newsreader = localFont({
-  src: "../fonts/newsreader-latin-300-400.woff2",
-  weight: "300 400",
-  style: "normal",
-  variable: "--font-serif",
-  display: "swap",
-  // The fallback face next/font/google generated for Newsreader, kept exactly
-  // (globals.css), so the swap behaves as before.
-  adjustFontFallback: false,
-  fallback: ["Newsreader Fallback"],
-});
-
-const jost = Jost({
-  subsets: ["latin"],
-  weight: ["300", "400"],
-  variable: "--font-sans",
-  display: "swap",
-});
+// Fonts (PSI pass 1): plain @font-face rules in globals.css instead of
+// next/font, so each face is split by unicode-range into a small first file
+// (the glyphs the site sets, preloaded below) and a rest-of-latin file that
+// only loads if a page or a visitor's typing needs it. Same outlines, same
+// axes, same fallback faces. Regenerate with scripts/subset-fonts.sh.
+const FONT_PRELOADS = ["/fonts/newsreader-a.v2.woff2", "/fonts/jost-a.v2.woff2"];
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -51,27 +33,16 @@ export const viewport: Viewport = {
   themeColor: "#F6F2EB",
 };
 
-// Marks the document as scripted before first paint so image fades only apply
-// when JavaScript can reveal them (globals.css `.js .frame > img`), and marks
-// each frame photograph as loaded the moment it loads, without waiting for
-// React: a capturing `load` listener on the document sees every image,
-// including those added by client navigation.
-const jsFlag =
-  "document.documentElement.classList.add('js');" +
-  "document.addEventListener('load',function(e){var t=e.target;" +
-  "if(t.tagName==='IMG'&&t.parentNode&&t.parentNode.classList&&t.parentNode.classList.contains('frame'))" +
-  "t.setAttribute('data-loaded','true')},true)";
-
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  for (const href of FONT_PRELOADS) preload(href, { as: "font", type: "font/woff2", crossOrigin: "" });
   return (
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${newsreader.variable} ${jost.variable}`}
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: jsFlag }} />
+        <script dangerouslySetInnerHTML={{ __html: headScript }} />
       </head>
       <body>
         <a href="#main" className="skip-link">

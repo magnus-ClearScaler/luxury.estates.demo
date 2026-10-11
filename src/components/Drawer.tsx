@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useRef } from "react";
 import { copy } from "@/lib/copy";
 import { nav } from "@/lib/site";
 
@@ -10,49 +7,26 @@ import { nav } from "@/lib/site";
  * opacity and translateX(-16px to 0) over 400ms; backdrop fades over 300ms.
  * Items in Newsreader 26px, a hairline, the office line. A hairline X closes
  * it, as do Escape and a backdrop click. Body scroll is locked while open;
- * the closed panel is inert. Route changes close it via the parent's
- * `openedOn === pathname` state.
+ * the closed panel is inert. Following a link to another page closes it.
+ *
+ * Rendered closed on the server; the head script (src/lib/head-script.ts)
+ * opens and closes it. Focus goes to the X on opening, and back to MENU only
+ * when it was closed from the keyboard, so pointer users never see the focus
+ * ring appear on MENU.
  */
-/** How the drawer was closed: focus goes back to MENU only for `keyboard`. */
-export type CloseReason = "keyboard" | "pointer";
-
-export function Drawer({ open, onClose }: { open: boolean; onClose: (reason: CloseReason) => void }) {
-  const closeButton = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    closeButton.current?.focus();
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose("keyboard");
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open, onClose]);
-
+export function Drawer() {
   return (
-    <div className="drawer-root" data-open={open ? "true" : "false"}>
-      <div className="drawer-backdrop" aria-hidden="true" onClick={() => onClose("pointer")} />
+    <div className="drawer-root" data-open="false">
+      <div className="drawer-backdrop" aria-hidden="true" />
       <div
         id="site-drawer"
         className="drawer-panel"
         role="dialog"
         aria-modal="true"
         aria-label={copy.drawer.label}
-        inert={!open}
+        inert
       >
-        <button
-          ref={closeButton}
-          type="button"
-          className="drawer-close"
-          aria-label={copy.drawer.close}
-          // A keyboard activation fires a click with detail 0.
-          onClick={(e) => onClose(e.detail === 0 ? "keyboard" : "pointer")}
-        >
+        <button type="button" className="drawer-close" aria-label={copy.drawer.close}>
           <span aria-hidden="true" />
           <span aria-hidden="true" />
         </button>

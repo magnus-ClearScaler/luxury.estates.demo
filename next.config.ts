@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },
       {
+        // Versioned by name (scripts/subset-fonts.sh).
+        source: "/fonts/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
         source: "/grain-v2.png",
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
       },

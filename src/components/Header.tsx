@@ -1,10 +1,6 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { copy } from "@/lib/copy";
-import { Drawer, type CloseReason } from "./Drawer";
+import { Drawer } from "./Drawer";
 import { Wordmark } from "./Wordmark";
 
 /**
@@ -14,43 +10,23 @@ import { Wordmark } from "./Wordmark";
  * Never over a photograph, ink text always. Mobile: MENU, wordmark, nothing
  * right; 64px tall. The sticky box keeps 88px in the flow and only the bar
  * inside it shrinks, so the page below never moves on scroll (globals.css).
+ *
+ * A server component (PSI pass 1): the compaction and the drawer run from
+ * the small script in the document head (`headScript`, src/lib/head-script.ts),
+ * so neither ships React code to the browser.
  */
 export function Header() {
-  const pathname = usePathname();
-  const [compact, setCompact] = useState(false);
-  // The drawer is open only on the path it was opened on, so it closes on
-  // route change without an effect (brief 5.2).
-  const [openedOn, setOpenedOn] = useState<string | null>(null);
-  const open = openedOn === pathname;
-  const menuButton = useRef<HTMLButtonElement>(null);
-  // Focus returns to MENU only when the drawer was closed from the keyboard,
-  // so pointer users never see the focus ring appear on it.
-  const close = useCallback((reason: CloseReason) => {
-    setOpenedOn(null);
-    if (reason === "keyboard") menuButton.current?.focus();
-    else (document.activeElement as HTMLElement | null)?.blur();
-  }, []);
-
-  useEffect(() => {
-    const onScroll = () => setCompact(window.scrollY > 40);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
     <>
-      <header className="site-header" data-compact={compact ? "true" : "false"}>
+      <header className="site-header" data-compact="false">
         <div className="site-header-bar">
           <div className="site-header-inner container-x">
             <div className="site-header-left">
               <button
-                ref={menuButton}
                 type="button"
                 className="menu-button t-nav"
-                aria-expanded={open}
+                aria-expanded={false}
                 aria-controls="site-drawer"
-                onClick={() => setOpenedOn(pathname)}
               >
                 <span className="menu-glyph" aria-hidden="true">
                   <span />
@@ -70,7 +46,7 @@ export function Header() {
           </div>
         </div>
       </header>
-      <Drawer open={open} onClose={close} />
+      <Drawer />
     </>
   );
 }
