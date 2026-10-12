@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { afterFirstPaint } from "@/lib/after-paint";
 
 /**
  * The hero film's <video> (HeroFilm): the one part of the hero that needs the
  * browser.
  *
- * - Sources are attached only after requestIdleCallback, 720p under 768px,
+ * - Sources are attached only after the first paint and then
+ *   requestIdleCallback (PSI pass 2), 720p under 768px,
  *   WebM then MP4, autoplay muted loop playsInline preload none.
  * - Skipped under prefers-reduced-motion, Save-Data, or 2g/3g.
  * - If play() is refused it retries once on the first interaction.
@@ -42,12 +44,20 @@ export function FilmVideo({ name }: { name: string }) {
       requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
       cancelIdleCallback?: (id: number) => void;
     };
-    if (w.requestIdleCallback) {
-      const id = w.requestIdleCallback(pick, { timeout: 2500 });
-      return () => w.cancelIdleCallback?.(id);
-    }
-    const id = window.setTimeout(pick, 1200);
-    return () => window.clearTimeout(id);
+    let cancelIdle = () => {};
+    const cancelPaint = afterFirstPaint(() => {
+      if (w.requestIdleCallback) {
+        const id = w.requestIdleCallback(pick, { timeout: 2500 });
+        cancelIdle = () => w.cancelIdleCallback?.(id);
+        return;
+      }
+      const id = window.setTimeout(pick, 1200);
+      cancelIdle = () => window.clearTimeout(id);
+    });
+    return () => {
+      cancelPaint();
+      cancelIdle();
+    };
   }, []);
 
   useEffect(() => {

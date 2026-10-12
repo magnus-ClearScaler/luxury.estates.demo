@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useRef, type ImgHTMLAttributes } from "react";
+import { afterFirstPaint } from "@/lib/after-paint";
 
 /**
  * A below-the-fold frame photograph whose request waits for the window `load`
- * event. Native lazy loading on a phone starts five or six photographs at once
+ * event and the first paint (PSI pass 2: `load` can come before the first
+ * frame is on screen). Native lazy loading on a phone starts five or six photographs at once
  * with the first screen's own image; holding them until `load` keeps the first
  * screen's bytes to itself. Once `srcset` and `src` are set, native
  * `loading="lazy"` takes over as usual. The 600ms fade from sand
@@ -24,12 +26,19 @@ export function DeferredImg({ src, srcSet, alt, ...rest }: ImgHTMLAttributes<HTM
       if (srcSet) img.srcset = srcSet;
       img.src = src;
     };
+    let cancel = () => {};
+    const onLoad = () => {
+      cancel = afterFirstPaint(release);
+    };
     if (document.readyState === "complete") {
-      release();
-      return;
+      onLoad();
+      return () => cancel();
     }
-    window.addEventListener("load", release, { once: true });
-    return () => window.removeEventListener("load", release);
+    window.addEventListener("load", onLoad, { once: true });
+    return () => {
+      window.removeEventListener("load", onLoad);
+      cancel();
+    };
   }, [src, srcSet]);
 
   // eslint-disable-next-line @next/next/no-img-element

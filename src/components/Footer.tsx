@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/SiteLink";
 import { copy } from "@/lib/copy";
 import { published } from "@/lib/estates";
 import { houseLinks } from "@/lib/site";

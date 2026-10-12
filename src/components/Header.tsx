@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/SiteLink";
 import { copy } from "@/lib/copy";
 import { Drawer } from "./Drawer";
 import { Wordmark } from "./Wordmark";

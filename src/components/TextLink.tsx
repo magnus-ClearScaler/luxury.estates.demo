@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/SiteLink";
 
 /**
  * The default CTA (brief 5.4): Jost 12 caps at 0.16em, underline 6px below the

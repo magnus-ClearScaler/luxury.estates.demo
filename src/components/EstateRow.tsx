@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/SiteLink";
 import { Frame } from "./Frame";
 import { TextLink } from "./TextLink";
 import { copy } from "@/lib/copy";
